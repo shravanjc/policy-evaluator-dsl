@@ -1,0 +1,349 @@
+openapi: 3.1.0
+
+info:
+  title: Policy Evaluation DSL Service
+  description: |
+    Evaluates insurance policy eligibility for member details and computes premiums
+    using a custom DSL rule engine (Spring Expression Language).
+
+    ## DSL Reference
+
+    Three variables are available in all expressions:
+
+    | Variable         | Type     | Required?      |
+    |------------------|----------|----------------|
+    | `age`            | `int`    | Yes            |
+    | `gender`         | `String` | Yes            |
+    | `claimFreeYears` | `int`    | No (default 0) |
+
+    **Eligibility DSL** – must return `boolean`
+    ```
+    age >= 18 AND age <= 65 AND claimFreeYears >= 2
+    age >= 18 AND (gender == 'MALE' OR gender == 'FEMALE')
+    ```
+
+    **Premium DSL** – must return a number; rounded to 2 decimal places
+    ```
+    500 + (age * 8) - (claimFreeYears * 20)
+    gender == 'FEMALE' ? 400 + (age * 6) : 420 + (age * 7)
+    ```
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+tags:
+  - name: Policies
+    description: Policy lifecycle management
+  - name: Evaluation
+    description: Applicant eligibility and premium calculation
+
+paths:
+
+  /api/v1/policies:
+    post:
+      tags: [ Policies ]
+      summary: Create a policy
+      operationId: createPolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyRequest'
+            example:
+              name: My Policy
+              description: Description
+              eligibilityDsl: age >= 18 AND age <= 60 AND claimFreeYears >= 1
+              basePremium: 400
+              variablePremium: (age * 7) - (claimFreeYears * 15)
+              currency: EUR
+      responses:
+        '201':
+          description: Policy created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    get:
+      tags: [ Policies ]
+      summary: List all policies
+      operationId: listPolicies
+      responses:
+        '200':
+          description: List of all policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyResponse'
+
+  /api/v1/policies/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PolicyId'
+
+    get:
+      tags: [ Policies ]
+      summary: Get a policy by ID
+      operationId: getPolicyById
+      responses:
+        '200':
+          description: Policy found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [ Policies ]
+      summary: Delete a policy
+      operationId: deletePolicy
+      responses:
+        '204':
+          description: Policy deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/policies/{id}/update-premium:
+    parameters:
+      - $ref: '#/components/parameters/PolicyId'
+
+    put:
+      tags: [ Policies ]
+      summary: Update the premium rules of a policy
+      operationId: updatePremium
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePremiumRequest'
+            example:
+              basePremium: 400
+              variablePremium: (age * 7) - (claimFreeYears * 15)
+              currency: EUR
+      responses:
+        '200':
+          description: Premium updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/policies/{id}/evaluate:
+    parameters:
+      - $ref: '#/components/parameters/PolicyId'
+
+    post:
+      tags: [ Evaluation ]
+      summary: Evaluate an applicant against a policy
+      operationId: evaluateApplicant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluationRequest'
+            example:
+              gender: MALE
+              age: 35
+              claimFreeYears: 5
+      responses:
+        '200':
+          description: Evaluation result (eligible or ineligible)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationResponse'
+              examples:
+                eligible:
+                  summary: Eligible applicant
+                  value:
+                    policyId: 123
+                    eligible: true
+                    premium: 640.00
+                    currency: EUR
+                    reason: null
+                ineligible:
+                  summary: Ineligible applicant
+                  value:
+                    policyId: 123
+                    eligible: false
+                    premium: null
+                    currency: null
+                    reason: Not eligible
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+
+  parameters:
+    PolicyId:
+      name: id
+      in: path
+      required: true
+      description: Unique policy identifier
+      schema:
+        type: integer
+        format: int64
+        example: 123
+
+  schemas:
+
+    CreatePolicyRequest:
+      type: object
+      required: [ name, eligibilityDsl, basePremium, variablePremium, currency ]
+      properties:
+        name:
+          type: string
+          description: Short display name for the policy
+          example: My Policy
+        description:
+          type: string
+          description: Optional human-readable description
+          example: Description
+        eligibilityDsl:
+          type: string
+          description: SpEL expression that must evaluate to boolean
+          example: age >= 18 AND age <= 60 AND claimFreeYears >= 1
+        basePremium:
+          type: number
+          format: double
+          description: Fixed base premium amount
+          example: 400
+        variablePremium:
+          type: string
+          description: SpEL expression that must evaluate to a number
+          example: (age * 7) - (claimFreeYears * 15)
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: EUR
+
+    UpdatePremiumRequest:
+      type: object
+      required: [ basePremium, variablePremium, currency ]
+      properties:
+        basePremium:
+          type: number
+          format: double
+          description: New fixed base premium amount
+          example: 400
+        variablePremium:
+          type: string
+          description: New SpEL expression for variable premium
+          example: (age * 7) - (claimFreeYears * 15)
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: EUR
+
+    EvaluationRequest:
+      type: object
+      required: [ gender, age ]
+      properties:
+        gender:
+          type: string
+          enum: [ MALE, FEMALE ]
+          example: MALE
+        age:
+          type: integer
+          minimum: 0
+          example: 35
+        claimFreeYears:
+          type: integer
+          minimum: 0
+          default: 0
+          example: 5
+
+    PolicyResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 123
+        name:
+          type: string
+          example: My Policy
+        description:
+          type: string
+          example: Description
+        eligibilityDsl:
+          type: string
+          example: age >= 18 AND age <= 60 AND claimFreeYears >= 1
+        basePremium:
+          type: number
+          format: double
+          example: 400
+        variablePremium:
+          type: string
+          example: (age * 7) - (claimFreeYears * 15)
+        currency:
+          type: string
+          example: EUR
+
+    EvaluationResponse:
+      type: object
+      properties:
+        policyId:
+          type: integer
+          format: int64
+          example: 123
+        eligible:
+          type: boolean
+          example: true
+        premium:
+          type: number
+          format: double
+          nullable: true
+          description: Computed premium; present only when eligible
+          example: 640.00
+        currency:
+          type: string
+          nullable: true
+          description: Currency of the premium; present only when eligible
+          example: EUR
+        reason:
+          type: string
+          nullable: true
+          description: Ineligibility reason; present only when not eligible
+          example: Not eligible
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Invalid DSL expression
+
+  responses:
+    BadRequest:
+      description: Invalid request body or DSL expression
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Policy not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: 404
+            message: Policy not found

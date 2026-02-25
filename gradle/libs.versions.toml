@@ -1,0 +1,14 @@
+[versions]
+java-toolchain = "25"
+openapi-generator = "7.20.0"
+spring-boot = "4.0.3"
+spring-dep-management = "1.1.7"
+springdoc = "2.6.0"
+
+[libraries]
+springdoc-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+
+[plugins]
+openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dep-management = { id = "io.spring.dependency-management", version.ref = "spring-dep-management" }

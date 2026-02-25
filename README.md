@@ -2,9 +2,11 @@
 
 Spring Boot 4.0.3 · Java 25 · Gradle 9.3.1 · DDD (Domain driven development) · Custom DSL
 
-- Evaluates insurance policy eligibility for member details and computes premiums using a custom DSL 'rule engine' (Spring Expression Language).
+- Evaluates insurance policy eligibility for member details and computes premiums using a custom
+  DSL 'rule engine' (Spring Expression Language).
 - Default rules are set in [application.properties](./src/main/resources/application.properties)
-  - They can be updated at runtime (without a server restart to simulate an external config setup in production)
+    - They can be updated at runtime (without a server restart to simulate an external config setup
+      in production)
 - Policy specific rules can be set to override that.
 - Uses H2 in-memory SQL database for demo purposes.
 
@@ -13,7 +15,8 @@ Spring Boot 4.0.3 · Java 25 · Gradle 9.3.1 · DDD (Domain driven development) 
 ## Quick Start
 
 ```bash
-# Run the application
+# Run the application. It also runs the ./gradlew openApiGenerate task which generates the controllers 
+# and dtos based on the: Openapi spec: ./src/resources/openapi.yaml 
 ./gradlew bootRun
 
 # OpenAPI UI
@@ -42,6 +45,7 @@ Three variables are available in all expressions:
 | `claimFreeYears` | `int`    | N (default: 0) | `claimFreeYears >= 2` |
 
 **Eligibility DSL** – must return `boolean`
+
 ```
 age >= 18 AND age <= 65 AND claimFreeYears >= 2
 age >= 18 AND (gender == 'MALE' OR gender == 'FEMALE')
@@ -49,6 +53,7 @@ age >= 18 AND (gender == 'MALE' OR gender == 'FEMALE')
 ```
 
 **Premium DSL** – must return a number; rounded to 2 decimal places
+
 ```
 500 + (age * 8) - (claimFreeYears * 20)
 gender == 'FEMALE' ? 400 + (age * 6) : 420 + (age * 7)
@@ -71,6 +76,7 @@ age < 30 ? 250 : 500
 ----------------------------------------------------------------------------------------------
 **Create policy:**
 POST /api/v1/policies
+
 ```json
 {
   "name": "My Policy",
@@ -78,12 +84,14 @@ POST /api/v1/policies
   "eligibilityDsl": "age >= 18 AND age <= 60 AND claimFreeYears >= 1",
   "basePremium": 400,
   "variablePremium": "(age * 7) - (claimFreeYears * 15)",
-  "currency" "EUR"
+  "currency": "EUR"
 }
 ```
+
 ----------------------------------------------------------------------------------------------
 **Update premium:**
 POST /api/v1/policies/{id}/update-premium
+
 ```json
 {
   "basePremium": 400,
@@ -91,22 +99,25 @@ POST /api/v1/policies/{id}/update-premium
   "currency": "EUR"
 }
 ```
+
 ----------------------------------------------------------------------------------------------
 **Evaluate request:**
 POST /api/v1/policies/{id}/evaluate
+
 ```json
-{ 
-  "gender": "MALE", 
-  "age": 35, 
+{
+  "gender": "MALE",
+  "age": 35,
   "claimFreeYears": 5
 }
 ```
 
 **Eligible response:**
+
 ```json
-{ 
-  "policyId": 123, 
-  "eligible": true, 
+{
+  "policyId": 123,
+  "eligible": true,
   "premium": 640.00,
   "currency": "EUR",
   "reason": null
@@ -114,9 +125,10 @@ POST /api/v1/policies/{id}/evaluate
 ```
 
 **Ineligible response:**
+
 ```json
-{ 
-  "policyId": 123, 
+{
+  "policyId": 123,
   "eligible": false,
   "reason": "Not eligible"
 }
@@ -127,9 +139,7 @@ POST /api/v1/policies/{id}/evaluate
 ## Architecture (DDD)
 
 ```
-api/
-  rest/       – PolicyController, EvaluationController
-  advice/     – GlobalExceptionHandler
+api/          – PolicyController, EvaluationController, GlobalExceptionHandler
 application/
   dto/        – Request/Response records
   usecase/    – EvaluationUseCase, PolicyManagementUseCase

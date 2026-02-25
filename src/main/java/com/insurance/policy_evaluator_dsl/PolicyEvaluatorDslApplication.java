@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class PolicyEvaluatorDslApplication {
 
-	static void main(String[] args) {
-		SpringApplication.run(PolicyEvaluatorDslApplication.class, args);
-	}
+    static void main(String[] args) {
+        SpringApplication.run(PolicyEvaluatorDslApplication.class, args);
+    }
 }

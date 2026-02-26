@@ -25,7 +25,7 @@ public class DefaultPolicySeeder implements ApplicationRunner {
                 .description(policyProperties.description())
                 .eligibilityDsl(policyProperties.eligibilityDsl())
                 .basePremium(policyProperties.basePremium())
-                .variablePremium(policyProperties.variablePremium())
+                .variablePremiumDsl(policyProperties.variablePremiumDsl())
                 .currency(policyProperties.currency())
                 .build());
     }

@@ -30,7 +30,7 @@ class PolicyManagementServiceTest {
     void create_validPolicy_savesAndReturnsPolicy() {
         // given
         Policy policy = Policy.builder().name("Test").eligibilityDsl("age >= 18")
-                .basePremium(400.0).variablePremium("age * 7").currency("EUR").build();
+                .basePremium(400.0).variablePremiumDsl("age * 7").currency("EUR").build();
         when(policyRepository.save(policy)).thenReturn(policy);
 
         // when
@@ -82,7 +82,7 @@ class PolicyManagementServiceTest {
     @Test
     void updatePremium_existingId_updatesAndReturnsSavedPolicy() {
         // given
-        Policy existing = Policy.builder().id(1L).basePremium(300.0).variablePremium("age * 5").currency("USD").build();
+        Policy existing = Policy.builder().id(1L).basePremium(300.0).variablePremiumDsl("age * 5").currency("EUR").build();
         when(policyRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(policyRepository.save(existing)).thenReturn(existing);
 
@@ -91,7 +91,7 @@ class PolicyManagementServiceTest {
 
         // then
         assertThat(result.getBasePremium()).isEqualTo(400.0);
-        assertThat(result.getVariablePremium()).isEqualTo("age * 7");
+        assertThat(result.getVariablePremiumDsl()).isEqualTo("age * 7");
         assertThat(result.getCurrency()).isEqualTo("EUR");
     }
 }

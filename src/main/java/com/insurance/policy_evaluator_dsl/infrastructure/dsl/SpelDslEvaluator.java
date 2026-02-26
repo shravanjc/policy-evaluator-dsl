@@ -14,6 +14,7 @@ import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.stereotype.Component;
 
 import static java.lang.Boolean.TRUE;
+import static java.math.BigDecimal.ZERO;
 
 /**
  * Spring expression language backed implementation of {@link DslEvaluator}.
@@ -30,8 +31,8 @@ public class SpelDslEvaluator implements DslEvaluator {
     private final SpelExpressionParser parser = new SpelExpressionParser();
 
     // Parsing a SpEL expression is relatively expensive, so we cache compiled Expression objects.
-    // To avoid them growing indefinitely (although upper bound is the number of policies), we
-    // cached them in a bounded LRU map (cap: {@value MAX_CACHE_SIZE} entries):
+    // To avoid them growing indefinitely (although upper bound is 2x policies (1x eligibilityDsl, 1x variablePremiumDsl).
+    // We cache them in a bounded LRU map (cap: MAX_CACHE_SIZE entries):
     // - LinkedHashMap access moves each entry to the tail on every read, keeping the least-recently-used entry at the head.
     // - This would automatically is then bounded by the cache size by evicting the head.
     // Collections.synchronizedMap wraps every operation under a single mutex, this is required
@@ -52,8 +53,8 @@ public class SpelDslEvaluator implements DslEvaluator {
 
     @Override
     public BigDecimal evaluatePremium(final String dsl, final Applicant applicant) {
-        Number result = parse(dsl).getValue(buildContext(applicant), Number.class);
-        return result != null ? new BigDecimal(result.toString()) : BigDecimal.ZERO;
+        BigDecimal result = parse(dsl).getValue(buildContext(applicant), BigDecimal.class);
+        return result != null ? result : ZERO;
     }
 
     private Expression parse(final String dsl) {

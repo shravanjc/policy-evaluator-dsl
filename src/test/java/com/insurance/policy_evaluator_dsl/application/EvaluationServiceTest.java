@@ -36,7 +36,7 @@ class EvaluationServiceTest {
     void evaluate_existingPolicy_returnsEvaluationResult() {
         // given
         Policy policy = Policy.builder().id(1L).eligibilityDsl("age >= 18")
-                .basePremium(400.0).variablePremium("age * 7").currency("EUR").build();
+                .basePremium(400.0).variablePremiumDsl("age * 7").currency("EUR").build();
         Applicant applicant = Applicant.of(35, Gender.MALE, 5);
         EligibilityResult expected = EligibilityResult.eligible(BigDecimal.valueOf(645), "EUR");
 

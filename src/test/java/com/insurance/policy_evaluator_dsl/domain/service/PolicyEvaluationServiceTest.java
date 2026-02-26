@@ -34,13 +34,13 @@ class PolicyEvaluationServiceTest {
         Policy policy = Policy.builder()
                 .eligibilityDsl("age >= 18")
                 .basePremium(400.0)
-                .variablePremium("age * 7")
+                .variablePremiumDsl("age * 7")
                 .currency("EUR")
                 .build();
         Applicant applicant = Applicant.of(35, Gender.MALE, 5);
 
         when(dslEvaluator.evaluateEligibility(policy.getEligibilityDsl(), applicant)).thenReturn(true);
-        when(dslEvaluator.evaluatePremium(policy.getVariablePremium(), applicant)).thenReturn(BigDecimal.valueOf(245));
+        when(dslEvaluator.evaluatePremium(policy.getVariablePremiumDsl(), applicant)).thenReturn(BigDecimal.valueOf(245));
 
         // when
         EligibilityResult result = service.evaluate(policy, applicant);
@@ -57,7 +57,7 @@ class PolicyEvaluationServiceTest {
         Policy policy = Policy.builder()
                 .eligibilityDsl("age >= 18")
                 .basePremium(400.0)
-                .variablePremium("age * 7")
+                .variablePremiumDsl("age * 7")
                 .currency("EUR")
                 .build();
         Applicant applicant = Applicant.of(16, Gender.MALE, 0);
@@ -79,19 +79,19 @@ class PolicyEvaluationServiceTest {
         Policy policy = Policy.builder()
                 .eligibilityDsl("age >= 18")
                 .basePremium(400.0)
-                .variablePremium("age * 7")
+                .variablePremiumDsl("age * 7")
                 .currency("EUR")
                 .build();
         Applicant applicant = Applicant.of(35, Gender.MALE, 5);
 
         when(dslEvaluator.evaluateEligibility(policy.getEligibilityDsl(), applicant)).thenReturn(true);
-        when(dslEvaluator.evaluatePremium(policy.getVariablePremium(), applicant)).thenReturn(new BigDecimal("245.555"));
+        when(dslEvaluator.evaluatePremium(policy.getVariablePremiumDsl(), applicant)).thenReturn(new BigDecimal("245.55"));
 
         // when
         EligibilityResult result = service.evaluate(policy, applicant);
 
         // then
         assertThat(result.premium().scale()).isEqualTo(2);
-        assertThat(result.premium()).isEqualByComparingTo("645.56");
+        assertThat(result.premium()).isEqualByComparingTo("645.55");
     }
 }

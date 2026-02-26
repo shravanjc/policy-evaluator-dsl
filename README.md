@@ -126,7 +126,7 @@ POST /api/v1/policies
   "description": "Description",
   "eligibilityDsl": "age >= 18 AND age <= 60 AND claimFreeYears >= 1",
   "basePremium": 400,
-  "variablePremium": "(age * 7) - (claimFreeYears * 15)",
+  "variablePremiumDsl": "(age * 7) - (claimFreeYears * 15)",
   "currency": "EUR"
 }
 ```
@@ -138,7 +138,7 @@ POST /api/v1/policies/{id}/update-premium
 ```json
 {
   "basePremium": 400,
-  "variablePremium": "(age * 7) - (claimFreeYears * 15)",
+  "variablePremiumDsl": "(age * 7) - (claimFreeYears * 15)",
   "currency": "EUR"
 }
 ```

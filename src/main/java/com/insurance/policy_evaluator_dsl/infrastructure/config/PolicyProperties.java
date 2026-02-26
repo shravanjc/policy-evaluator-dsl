@@ -8,7 +8,7 @@ public record PolicyProperties(
         String description,
         String eligibilityDsl,
         Double basePremium,
-        String variablePremium,
+        String variablePremiumDsl,
         String currency
 ) {
 }

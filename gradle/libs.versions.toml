@@ -4,9 +4,11 @@ openapi-generator = "7.20.0"
 spring-boot = "4.0.3"
 spring-dep-management = "1.1.7"
 springdoc = "2.6.0"
+lombok = "1.18.42"
 
 [libraries]
 springdoc-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 
 [plugins]
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }

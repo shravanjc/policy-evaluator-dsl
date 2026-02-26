@@ -5,9 +5,10 @@ import java.util.List;
 import com.insurance.policy_evaluator_dsl.api.mapper.PolicyApiMapper;
 import com.insurance.policy_evaluator_dsl.application.PolicyManagementService;
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
-import com.insurance.policy_evaluator_dsl.dto.CreatePolicyRequest;
-import com.insurance.policy_evaluator_dsl.dto.PolicyResponse;
-import com.insurance.policy_evaluator_dsl.dto.UpdatePremiumRequest;
+import com.insurance.policy_evaluator_dsl.generated.api.PoliciesApi;
+import com.insurance.policy_evaluator_dsl.generated.dto.CreatePolicyRequest;
+import com.insurance.policy_evaluator_dsl.generated.dto.PolicyResponse;
+import com.insurance.policy_evaluator_dsl.generated.dto.UpdatePremiumRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,12 +29,14 @@ public class PolicyController implements PoliciesApi {
 
     @Override
     public ResponseEntity<Void> deletePolicy(Long id) {
-        throw new UnsupportedOperationException("not implemented");
+        policyManagementService.delete(id);
+        return ResponseEntity.ok().build();
     }
 
     @Override
     public ResponseEntity<PolicyResponse> getPolicyById(Long id) {
-        throw new UnsupportedOperationException("not implemented");
+        final Policy policy = policyManagementService.findById(id);
+        return ResponseEntity.ok(policyApiMapper.toResponse(policy));
     }
 
     @Override
@@ -46,6 +49,7 @@ public class PolicyController implements PoliciesApi {
 
     @Override
     public ResponseEntity<PolicyResponse> updatePremium(Long id, UpdatePremiumRequest updatePremiumRequest) {
-        throw new UnsupportedOperationException("not implemented");
+        final Policy policy = policyManagementService.updatePremium(id, updatePremiumRequest.getBasePremium(), updatePremiumRequest.getVariablePremiumDsl(), updatePremiumRequest.getCurrency());
+        return ResponseEntity.ok(policyApiMapper.toResponse(policy));
     }
 }

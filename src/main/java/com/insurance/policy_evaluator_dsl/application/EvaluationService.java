@@ -1,11 +1,11 @@
 package com.insurance.policy_evaluator_dsl.application;
 
+import java.util.NoSuchElementException;
+
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
 import com.insurance.policy_evaluator_dsl.domain.model.EligibilityResult;
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
 import com.insurance.policy_evaluator_dsl.domain.repository.PolicyRepository;
-
-import java.util.NoSuchElementException;
 import com.insurance.policy_evaluator_dsl.domain.service.PolicyEvaluationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

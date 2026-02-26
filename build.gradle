@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dep.management)
     alias(libs.plugins.openapi.generator)
@@ -29,8 +30,8 @@ openApiGenerate {
     generatorName = 'spring'
     inputSpec = "$rootDir/src/main/resources/openapi.yaml"
     outputDir = layout.buildDirectory.dir('generated').get().asFile.toString()
-    apiPackage = 'com.insurance.policy_evaluator_dsl.api'
-    modelPackage = 'com.insurance.policy_evaluator_dsl.dto'
+    apiPackage = 'com.insurance.policy_evaluator_dsl.generated.api'
+    modelPackage = 'com.insurance.policy_evaluator_dsl.generated.dto'
     generateApiTests = false
     generateModelTests = false
     generateApiDocumentation = true
@@ -83,6 +84,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation libs.archunit.junit5
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    itestImplementation libs.rest.assured
 }
 
 tasks.named('test') {
@@ -96,4 +99,28 @@ tasks.register('itest', Test) {
     classpath = sourceSets.itest.runtimeClasspath
     useJUnitPlatform()
     shouldRunAfter tasks.named('test')
+}
+
+jacoco {
+    toolVersion = "0.8.14"
+}
+
+def jacocoExcludes = [
+    '**/*Application*',                                      // Spring Boot entry point
+    'com/insurance/policy_evaluator_dsl/generated/**',       // Generated OpenAPI API interfaces, DTOs
+    'com/insurance/policy_evaluator_dsl/api/mapper',         // Generated Mapstruct mappers
+    'com/insurance/policy_evaluator_dsl/infrastructure/config/**' // Other infrastructure
+]
+
+jacocoTestReport {
+    dependsOn itest
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    classDirectories.setFrom(
+        sourceSets.main.output.classesDirs.collect { dir ->
+            fileTree(dir: dir, excludes: jacocoExcludes)
+        }
+    )
 }

@@ -1,14 +1,15 @@
 package com.insurance.policy_evaluator_dsl.api;
 
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
 import com.insurance.policy_evaluator_dsl.dto.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 /**
  * Global handling of all exceptions to return structured responses.
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
  * formatted or language specific messages.
  */
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
@@ -37,6 +39,13 @@ public class GlobalExceptionHandler {
                 .map(fe -> fe.getField() + " " + fe.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         return errorResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleUnexpected(Exception ex) {
+        log.error("Unhandled exception", ex);
+        return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
     }
 
     private static ErrorResponse errorResponse(HttpStatus status, String message) {

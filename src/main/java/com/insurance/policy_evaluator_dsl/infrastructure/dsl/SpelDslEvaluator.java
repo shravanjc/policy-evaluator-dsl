@@ -2,12 +2,18 @@ package com.insurance.policy_evaluator_dsl.infrastructure.dsl;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
 import com.insurance.policy_evaluator_dsl.domain.service.DslEvaluator;
 import org.springframework.expression.Expression;
+import org.springframework.expression.spel.SpelNode;
+import org.springframework.expression.spel.ast.PropertyOrFieldReference;
+import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.MapAccessor;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
@@ -27,6 +33,7 @@ import static java.math.BigDecimal.ZERO;
 public class SpelDslEvaluator implements DslEvaluator {
 
     private static final int MAX_CACHE_SIZE = 256;
+    private static final Set<String> KNOWN_VARIABLES = Set.of("age", "gender", "claimFreeYears");
 
     private final SpelExpressionParser parser = new SpelExpressionParser();
 
@@ -50,7 +57,7 @@ public class SpelDslEvaluator implements DslEvaluator {
         if (dsl == null || applicant == null) {
             return false;
         }
-        Boolean result = parse(dsl).getValue(buildContext(applicant), Boolean.class);
+        Boolean result = validateAndParseDsl(dsl).getValue(buildContext(applicant), Boolean.class);
         return TRUE.equals(result);
     }
 
@@ -59,12 +66,40 @@ public class SpelDslEvaluator implements DslEvaluator {
         if (dsl == null || applicant == null) {
             return ZERO;
         }
-        BigDecimal result = parse(dsl).getValue(buildContext(applicant), BigDecimal.class);
+        BigDecimal result = validateAndParseDsl(dsl).getValue(buildContext(applicant), BigDecimal.class);
         return result != null ? result : ZERO;
     }
 
-    private Expression parse(final String dsl) {
-        return expressionCache.computeIfAbsent(dsl, parser::parseExpression);
+    @Override
+    public Expression validateAndParseDsl(final String dsl) {
+        return expressionCache.computeIfAbsent(dsl, key -> {
+            Expression expression = parser.parseExpression(key);
+            validateVariables(expression);
+            return expression;
+        });
+    }
+
+    private void validateVariables(final Expression expression) {
+        Set<String> unknown = collectPropertyNames(((SpelExpression) expression).getAST())
+                .stream()
+                .filter(name -> !KNOWN_VARIABLES.contains(name))
+                .collect(Collectors.toSet());
+        if (!unknown.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "DSL references unknown variable(s): %s. Known variables: %s"
+                            .formatted(unknown, KNOWN_VARIABLES));
+        }
+    }
+
+    private Set<String> collectPropertyNames(final SpelNode node) {
+        Set<String> names = new HashSet<>();
+        if (node instanceof PropertyOrFieldReference ref) {
+            names.add(ref.getName());
+        }
+        for (int index = 0; index < node.getChildCount(); index++) {
+            names.addAll(collectPropertyNames(node.getChild(index)));
+        }
+        return names;
     }
 
     // SimpleEvaluationContext is used intentionally over StandardEvaluationContext to restrict what

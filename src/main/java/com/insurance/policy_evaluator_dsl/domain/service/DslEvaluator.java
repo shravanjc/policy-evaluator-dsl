@@ -3,10 +3,13 @@ package com.insurance.policy_evaluator_dsl.domain.service;
 import java.math.BigDecimal;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
+import org.springframework.expression.Expression;
 
 public interface DslEvaluator {
 
     boolean evaluateEligibility(String dsl, Applicant applicant);
 
     BigDecimal evaluatePremium(String dsl, Applicant applicant);
+
+    Expression validateAndParseDsl(final String dsl);
 }

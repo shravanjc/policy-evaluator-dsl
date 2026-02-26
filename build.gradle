@@ -36,11 +36,12 @@ openApiGenerate {
     generateApiDocumentation = true
     generateModelDocumentation = true
     configOptions = [
-            interfaceOnly  : 'true',
-            useSpringBoot4 : 'true',
-            useTags        : 'true',
-            openApiNullable: 'false',
-            useJakartaEe   : 'true',
+            interfaceOnly        : 'true',
+            skipDefaultInterface : 'true',
+            useSpringBoot4       : 'true',
+            useTags              : 'true',
+            openApiNullable      : 'false',
+            useJakartaEe         : 'true',
     ]
 }
 
@@ -50,22 +51,49 @@ sourceSets {
             srcDir layout.buildDirectory.dir('generated/src/main/java')
         }
     }
+    itest {
+        java.srcDirs = ['src/itest/java']
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += output + compileClasspath
+    }
 }
 
 compileJava.dependsOn tasks.openApiGenerate
 tasks.named('bootRun') { dependsOn tasks.openApiGenerate }
 
+configurations {
+    itestImplementation.extendsFrom testImplementation
+    itestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation libs.springdoc.openapi.webmvc.ui
+    implementation libs.mapstruct
+    implementation libs.lombok
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    runtimeOnly 'com.h2database:h2'
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    annotationProcessor libs.mapstruct.processor
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation libs.archunit.junit5
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('itest', Test) {
+    description = 'Runs integration tests'
+    group = 'verification'
+    testClassesDirs = sourceSets.itest.output.classesDirs
+    classpath = sourceSets.itest.runtimeClasspath
+    useJUnitPlatform()
+    shouldRunAfter tasks.named('test')
 }

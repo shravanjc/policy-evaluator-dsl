@@ -1,5 +1,7 @@
 [versions]
+archunit = "1.4.1"
 java-toolchain = "25"
+mapstruct = "1.6.3"
 openapi-generator = "7.20.0"
 spring-boot = "4.0.3"
 spring-dep-management = "1.1.7"
@@ -7,8 +9,11 @@ springdoc = "2.6.0"
 lombok = "1.18.42"
 
 [libraries]
-springdoc-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+springdoc-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
 [plugins]
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }

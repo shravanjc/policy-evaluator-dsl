@@ -1,6 +1,7 @@
 package com.insurance.policy_evaluator_dsl.application;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
 import com.insurance.policy_evaluator_dsl.domain.repository.PolicyRepository;
@@ -11,25 +12,38 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PolicyManagementService {
 
+    private static final String NOT_FOUND_POLICY = "Policy not found";
     private final PolicyRepository policyRepository;
 
     public Policy create(Policy policy) {
-        throw new UnsupportedOperationException("not implemented");
+        return policyRepository.save(policy);
     }
 
     public Policy findById(Long id) {
-        throw new UnsupportedOperationException("not implemented");
+        return policyRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(NOT_FOUND_POLICY));
     }
 
+    /**
+     * Should be switched to Paging call in production
+     */
     public List<Policy> findAll() {
-        throw new UnsupportedOperationException("not implemented");
+        return policyRepository.findAll();
     }
 
-    public Policy updatePremium(Long id, Double basePremium, String variablePremium, String currency) {
-        throw new UnsupportedOperationException("not implemented");
+    public Policy updatePremium(final Long id, final Double basePremium, final String variablePremium, final String currency) {
+        final Policy policy = findById(id);
+        policy.setBasePremium(basePremium);
+        policy.setVariablePremium(variablePremium);
+        policy.setCurrency(currency);
+        return policyRepository.save(policy);
     }
 
     public void delete(Long id) {
-        throw new UnsupportedOperationException("not implemented");
+        final boolean exists = policyRepository.existsById(id);
+        if (!exists) {
+            throw new NoSuchElementException(NOT_FOUND_POLICY);
+        }
+        policyRepository.deleteById(id);
     }
 }

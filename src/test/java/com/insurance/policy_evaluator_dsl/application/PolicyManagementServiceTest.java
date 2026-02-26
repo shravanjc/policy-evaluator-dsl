@@ -24,7 +24,7 @@ class PolicyManagementServiceTest {
     private PolicyRepository policyRepository;
 
     @InjectMocks
-    private PolicyManagementService service;
+    private PolicyManagementService policyManagementService;
 
     @Test
     void create_validPolicy_savesAndReturnsPolicy() {
@@ -34,7 +34,7 @@ class PolicyManagementServiceTest {
         when(policyRepository.save(policy)).thenReturn(policy);
 
         // when
-        Policy result = service.create(policy);
+        Policy result = policyManagementService.create(policy);
 
         // then
         assertThat(result).isEqualTo(policy);
@@ -48,13 +48,13 @@ class PolicyManagementServiceTest {
         when(policyRepository.findById(1L)).thenReturn(Optional.of(policy));
 
         // when / then
-        assertThat(service.findById(1L)).isEqualTo(policy);
+        assertThat(policyManagementService.findById(1L)).isEqualTo(policy);
     }
 
     @Test
     void findById_nonExistingId_throwsNoSuchElementException() {
         when(policyRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.findById(99L))
+        assertThatThrownBy(() -> policyManagementService.findById(99L))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
@@ -62,20 +62,20 @@ class PolicyManagementServiceTest {
     void findAll_returnsAllPolicies() {
         List<Policy> policies = List.of(Policy.builder().id(1L).build(), Policy.builder().id(2L).build());
         when(policyRepository.findAll()).thenReturn(policies);
-        assertThat(service.findAll()).hasSize(2);
+        assertThat(policyManagementService.findAll()).hasSize(2);
     }
 
     @Test
     void delete_existingId_deletesSuccessfully() {
         when(policyRepository.existsById(1L)).thenReturn(true);
-        service.delete(1L);
+        policyManagementService.delete(1L);
         verify(policyRepository).deleteById(1L);
     }
 
     @Test
     void delete_nonExistingId_throwsNoSuchElementException() {
         when(policyRepository.existsById(99L)).thenReturn(false);
-        assertThatThrownBy(() -> service.delete(99L))
+        assertThatThrownBy(() -> policyManagementService.delete(99L))
                 .isInstanceOf(NoSuchElementException.class);
     }
 
@@ -87,7 +87,7 @@ class PolicyManagementServiceTest {
         when(policyRepository.save(existing)).thenReturn(existing);
 
         // when
-        Policy result = service.updatePremium(1L, 400.0, "age * 7", "EUR");
+        Policy result = policyManagementService.updatePremium(1L, 400.0, "age * 7", "EUR");
 
         // then
         assertThat(result.getBasePremium()).isEqualTo(400.0);

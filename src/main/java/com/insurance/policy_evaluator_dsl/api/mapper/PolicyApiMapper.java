@@ -7,24 +7,21 @@ import com.insurance.policy_evaluator_dsl.dto.CreatePolicyRequest;
 import com.insurance.policy_evaluator_dsl.dto.EvaluationRequest;
 import com.insurance.policy_evaluator_dsl.dto.EvaluationResponse;
 import com.insurance.policy_evaluator_dsl.dto.PolicyResponse;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class PolicyApiMapper {
+import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
-    public Policy toDomain(CreatePolicyRequest request) {
-        throw new UnsupportedOperationException("not implemented");
-    }
+@Mapper(componentModel = SPRING)
+public interface PolicyApiMapper {
 
-    public PolicyResponse toResponse(Policy policy) {
-        throw new UnsupportedOperationException("not implemented");
-    }
+    @Mapping(target = "id", ignore = true)
+    Policy toDomain(CreatePolicyRequest request);
 
-    public Applicant toApplicant(EvaluationRequest request) {
-        throw new UnsupportedOperationException("not implemented");
-    }
+    PolicyResponse toResponse(Policy policy);
 
-    public EvaluationResponse toEvaluationResponse(EligibilityResult result, Long policyId) {
-        throw new UnsupportedOperationException("not implemented");
-    }
+    Applicant toApplicant(EvaluationRequest request);
+
+    @Mapping(target = ".", source = "result")
+    EvaluationResponse toEvaluationResponse(EligibilityResult result, Long policyId);
 }

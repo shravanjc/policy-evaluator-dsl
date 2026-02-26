@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
 import com.insurance.policy_evaluator_dsl.domain.model.Gender;
-import org.junit.jupiter.api.BeforeEach;
+import com.insurance.policy_evaluator_dsl.domain.service.DslEvaluator;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,12 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SpelDslEvaluatorTest {
 
-    private SpelDslEvaluator evaluator;
-
-    @BeforeEach
-    void setUp() {
-        evaluator = new SpelDslEvaluator();
-    }
+    private final DslEvaluator evaluator = new SpelDslEvaluator();
 
     @Test
     void evaluateEligibility_applicantMeetsCondition_returnsTrue() {

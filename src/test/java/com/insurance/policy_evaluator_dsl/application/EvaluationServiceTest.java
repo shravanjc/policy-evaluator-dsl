@@ -2,12 +2,10 @@ package com.insurance.policy_evaluator_dsl.application;
 
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
 import com.insurance.policy_evaluator_dsl.domain.model.EligibilityResult;
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
-import com.insurance.policy_evaluator_dsl.domain.repository.PolicyRepository;
 import com.insurance.policy_evaluator_dsl.domain.service.PolicyEvaluationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +23,7 @@ import static org.mockito.Mockito.when;
 class EvaluationServiceTest {
 
     @Mock
-    private PolicyRepository policyRepository;
+    private PolicyManagementService policyManagementService;
 
     @Mock
     private PolicyEvaluationService policyEvaluationService;
@@ -40,7 +38,7 @@ class EvaluationServiceTest {
         Applicant applicant = Applicant.of(1, MALE, 0);
         EligibilityResult eligibilityResult = EligibilityResult.eligible(BigDecimal.valueOf(120.50), "EUR");
 
-        when(policyRepository.findById(any())).thenReturn(Optional.of(policy));
+        when(policyManagementService.findById(any())).thenReturn(policy);
         when(policyEvaluationService.evaluate(policy, applicant)).thenReturn(eligibilityResult);
 
         //when
@@ -55,7 +53,7 @@ class EvaluationServiceTest {
     void evaluateForMissingPolicy() {
         //given
         Applicant applicant = Applicant.of(1, MALE, 0);
-        when(policyRepository.findById(any())).thenReturn(Optional.empty());
+        when(policyManagementService.findById(any())).thenThrow(NoSuchElementException.class);
 
         //when and then
         assertThatThrownBy(() -> service.evaluate(99L, applicant))

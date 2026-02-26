@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PolicyManagementService {
 
-    private static final String NOT_FOUND_POLICY = "Policy not found";
+    public static final String NOT_FOUND_POLICY = "Policy not found";
     private final PolicyRepository policyRepository;
 
     public Policy create(Policy policy) {

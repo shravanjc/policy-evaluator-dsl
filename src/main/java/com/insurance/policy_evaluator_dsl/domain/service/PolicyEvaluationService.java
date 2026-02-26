@@ -20,7 +20,7 @@ public class PolicyEvaluationService {
             return EligibilityResult.ineligible("Not eligible. Valid criteria: " + policy.getEligibilityDsl());
         }
         BigDecimal variable = dslEvaluator.evaluatePremium(policy.getVariablePremiumDsl(), applicant);
-        BigDecimal total = BigDecimal.valueOf(policy.getBasePremium())
+        BigDecimal total = policy.getBasePremium()
                 .add(variable)
                 .setScale(2, HALF_UP);
         return EligibilityResult.eligible(total, policy.getCurrency());

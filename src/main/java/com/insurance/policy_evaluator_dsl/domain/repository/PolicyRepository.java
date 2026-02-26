@@ -15,5 +15,5 @@ public interface PolicyRepository {
 
     void deleteById(Long id);
 
-    boolean existsById(Long id);
+    long count();
 }

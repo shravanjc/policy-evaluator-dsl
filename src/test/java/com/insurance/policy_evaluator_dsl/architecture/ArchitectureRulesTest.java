@@ -7,6 +7,8 @@ import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -22,6 +24,12 @@ class ArchitectureRulesTest {
             classes()
                     .that().areAnnotatedWith(RestController.class)
                     .should(implementAtLeastOneInterfaceFromPackage(API_PACKAGE));
+
+    @ArchTest
+    static final ArchRule service_classes_must_be_transactional =
+            classes()
+                    .that().areAnnotatedWith(Service.class)
+                    .should().beAnnotatedWith(Transactional.class);
 
     @ArchTest
     static final ArchRule layer_dependencies_are_respected =

@@ -1,5 +1,6 @@
 package com.insurance.policy_evaluator_dsl.application;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -8,16 +9,22 @@ import com.insurance.policy_evaluator_dsl.domain.repository.PolicyRepository;
 import com.insurance.policy_evaluator_dsl.domain.service.PolicyEvaluationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PolicyManagementService {
 
-    public static final String NOT_FOUND_POLICY = "Policy not found";
+    static final String NOT_FOUND_POLICY = "Policy not found";
     private final PolicyRepository policyRepository;
     private final PolicyEvaluationService policyEvaluationService;
 
+    @Transactional
     public Policy create(Policy policy) {
+        //validate the dsl expressions before persist
+        policyEvaluationService.validateDsl(policy.getEligibilityDsl());
+        policyEvaluationService.validateDsl(policy.getVariablePremiumDsl());
         return policyRepository.save(policy);
     }
 
@@ -33,7 +40,8 @@ public class PolicyManagementService {
         return policyRepository.findAll();
     }
 
-    public Policy updatePremium(final Long id, final Double basePremium, final String variablePremiumDsl, final String currency) {
+    @Transactional
+    public Policy updatePremium(final Long id, final BigDecimal basePremium, final String variablePremiumDsl, final String currency) {
         final Policy policy = findById(id);
         policy.setBasePremium(basePremium);
 
@@ -45,11 +53,8 @@ public class PolicyManagementService {
         return policyRepository.save(policy);
     }
 
+    @Transactional
     public void delete(Long id) {
-        final boolean exists = policyRepository.existsById(id);
-        if (!exists) {
-            throw new NoSuchElementException(NOT_FOUND_POLICY);
-        }
         policyRepository.deleteById(id);
     }
 }

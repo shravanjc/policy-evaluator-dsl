@@ -6,9 +6,11 @@ import com.insurance.policy_evaluator_dsl.domain.model.Policy;
 import com.insurance.policy_evaluator_dsl.domain.service.PolicyEvaluationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EvaluationService {
 
     private final PolicyManagementService policyManagementService;

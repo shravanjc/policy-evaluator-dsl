@@ -3,7 +3,7 @@ package com.insurance.policy_evaluator_dsl.api;
 import com.insurance.policy_evaluator_dsl.api.mapper.PolicyApiMapper;
 import com.insurance.policy_evaluator_dsl.application.EvaluationService;
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
-import com.insurance.policy_evaluator_dsl.dto.EvaluationResponse;
+import com.insurance.policy_evaluator_dsl.generated.dto.EvaluationResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

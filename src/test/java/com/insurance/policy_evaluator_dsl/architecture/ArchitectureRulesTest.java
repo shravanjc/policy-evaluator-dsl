@@ -15,7 +15,7 @@ import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 @AnalyzeClasses(packages = "com.insurance.policy_evaluator_dsl")
 class ArchitectureRulesTest {
 
-    private static final String API_PACKAGE = "com.insurance.policy_evaluator_dsl.api";
+    private static final String API_PACKAGE = "com.insurance.policy_evaluator_dsl.generated.api";
 
     @ArchTest
     static final ArchRule controllers_must_implement_a_generated_api_interface =

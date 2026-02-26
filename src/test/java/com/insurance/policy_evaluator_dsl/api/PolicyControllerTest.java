@@ -5,7 +5,7 @@ import java.util.List;
 import com.insurance.policy_evaluator_dsl.api.mapper.PolicyApiMapper;
 import com.insurance.policy_evaluator_dsl.application.PolicyManagementService;
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
-import com.insurance.policy_evaluator_dsl.dto.PolicyResponse;
+import com.insurance.policy_evaluator_dsl.generated.dto.PolicyResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

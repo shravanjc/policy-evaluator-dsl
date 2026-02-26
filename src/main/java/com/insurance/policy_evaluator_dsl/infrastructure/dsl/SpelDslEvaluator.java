@@ -47,12 +47,18 @@ public class SpelDslEvaluator implements DslEvaluator {
 
     @Override
     public boolean evaluateEligibility(final String dsl, final Applicant applicant) {
+        if (dsl == null || applicant == null) {
+            return false;
+        }
         Boolean result = parse(dsl).getValue(buildContext(applicant), Boolean.class);
         return TRUE.equals(result);
     }
 
     @Override
     public BigDecimal evaluatePremium(final String dsl, final Applicant applicant) {
+        if (dsl == null || applicant == null) {
+            return ZERO;
+        }
         BigDecimal result = parse(dsl).getValue(buildContext(applicant), BigDecimal.class);
         return result != null ? result : ZERO;
     }

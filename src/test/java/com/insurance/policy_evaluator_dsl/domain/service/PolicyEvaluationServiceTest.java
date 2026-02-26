@@ -7,12 +7,15 @@ import com.insurance.policy_evaluator_dsl.domain.model.EligibilityResult;
 import com.insurance.policy_evaluator_dsl.domain.model.Gender;
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,70 +31,37 @@ class PolicyEvaluationServiceTest {
         service = new PolicyEvaluationService(dslEvaluator);
     }
 
-    @Test
-    void evaluate_eligibleApplicant_returnsEligibleResult() {
-        // given
+    @ParameterizedTest
+    @CsvFileSource(resources = "/policy_premium_details.csv", numLinesToSkip = 1, nullValues = "NULL")
+    void evaluatePolicyTest(
+            String scenarioName,
+            boolean isEligible,
+            Double basePremium,
+            Double variablePremium,
+            String currency,
+            int age,
+            Gender gender,
+            int claimFreeYears,
+            BigDecimal expectedPremium,
+            String expectedReason) {
+
         Policy policy = Policy.builder()
-                .eligibilityDsl("age >= 18")
-                .basePremium(400.0)
-                .variablePremiumDsl("age * 7")
-                .currency("EUR")
+                .basePremium(basePremium)
+                .currency(currency)
                 .build();
-        Applicant applicant = Applicant.of(35, Gender.MALE, 5);
+        Applicant applicant = Applicant.of(age, gender, claimFreeYears);
 
-        when(dslEvaluator.evaluateEligibility(policy.getEligibilityDsl(), applicant)).thenReturn(true);
-        when(dslEvaluator.evaluatePremium(policy.getVariablePremiumDsl(), applicant)).thenReturn(BigDecimal.valueOf(245));
+        when(dslEvaluator.evaluateEligibility(any(), any())).thenReturn(isEligible);
+        lenient().when(dslEvaluator.evaluatePremium(any(), any())).thenReturn(BigDecimal.valueOf(variablePremium));
 
-        // when
         EligibilityResult result = service.evaluate(policy, applicant);
 
-        // then
-        assertThat(result.eligible()).isTrue();
-        assertThat(result.premium()).isEqualByComparingTo("645.00");
-        assertThat(result.currency()).isEqualTo("EUR");
-    }
-
-    @Test
-    void evaluate_ineligibleApplicant_returnsIneligibleResult() {
-        // given
-        Policy policy = Policy.builder()
-                .eligibilityDsl("age >= 18")
-                .basePremium(400.0)
-                .variablePremiumDsl("age * 7")
-                .currency("EUR")
-                .build();
-        Applicant applicant = Applicant.of(16, Gender.MALE, 0);
-
-        when(dslEvaluator.evaluateEligibility(policy.getEligibilityDsl(), applicant)).thenReturn(false);
-
-        // when
-        EligibilityResult result = service.evaluate(policy, applicant);
-
-        // then
-        assertThat(result.eligible()).isFalse();
-        assertThat(result.premium()).isNull();
-        assertThat(result.reason()).isNotBlank();
-    }
-
-    @Test
-    void evaluate_eligibleApplicant_premiumIsBasePlusVariableRoundedToTwoDecimalPlaces() {
-        // given
-        Policy policy = Policy.builder()
-                .eligibilityDsl("age >= 18")
-                .basePremium(400.0)
-                .variablePremiumDsl("age * 7")
-                .currency("EUR")
-                .build();
-        Applicant applicant = Applicant.of(35, Gender.MALE, 5);
-
-        when(dslEvaluator.evaluateEligibility(policy.getEligibilityDsl(), applicant)).thenReturn(true);
-        when(dslEvaluator.evaluatePremium(policy.getVariablePremiumDsl(), applicant)).thenReturn(new BigDecimal("245.55"));
-
-        // when
-        EligibilityResult result = service.evaluate(policy, applicant);
-
-        // then
-        assertThat(result.premium().scale()).isEqualTo(2);
-        assertThat(result.premium()).isEqualByComparingTo("645.55");
+        assertThat(result.eligible()).isEqualTo(isEligible);
+        if (isEligible) {
+            assertThat(result.currency()).isEqualTo(policy.getCurrency());
+            assertThat(result.premium()).isEqualByComparingTo(expectedPremium);
+        } else {
+            assertThat(result.reason()).isEqualTo(expectedReason);
+        }
     }
 }

@@ -17,7 +17,7 @@ public class PolicyEvaluationService {
     public EligibilityResult evaluate(Policy policy, Applicant applicant) {
         boolean isEligible = dslEvaluator.evaluateEligibility(policy.getEligibilityDsl(), applicant);
         if (!isEligible) {
-            return EligibilityResult.ineligible("Not eligible");
+            return EligibilityResult.ineligible("Not eligible. Valid criteria: " + policy.getEligibilityDsl());
         }
         BigDecimal variable = dslEvaluator.evaluatePremium(policy.getVariablePremiumDsl(), applicant);
         BigDecimal total = BigDecimal.valueOf(policy.getBasePremium())

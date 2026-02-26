@@ -113,7 +113,7 @@ def jacocoExcludes = [
 ]
 
 jacocoTestReport {
-    dependsOn itest
+    dependsOn tasks.named('test'), tasks.named('itest')
     reports {
         xml.required = true
         html.required = true

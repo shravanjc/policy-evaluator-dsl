@@ -15,10 +15,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static com.insurance.policy_evaluator_dsl.application.PolicyManagementService.NOT_FOUND_POLICY;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,6 +56,26 @@ class GlobalExceptionHandlerTest {
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value(NOT_FOUND_POLICY));
+    }
+
+    @Test
+    void illegalArgumentException_returns400WithMessage() throws Exception {
+        when(policyManagementService.updatePremium(any(), any(), any(), any()))
+                .thenThrow(new IllegalArgumentException("foo is not okay"));
+
+        mockMvc.perform(put("/api/v1/policies/1/update-premium")
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "basePremium": 400,
+                                  "currency": "EUR",
+                                  "variablePremiumDsl": "(age * 7) - (claimFreeYears * 15)"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("foo is not okay"));
     }
 
     @Test

@@ -24,7 +24,9 @@ public class PolicyManagementService {
     public Policy create(Policy policy) {
         //validate the dsl expressions before persist
         policyEvaluationService.validateDsl(policy.getEligibilityDsl());
-        policyEvaluationService.validateDsl(policy.getVariablePremiumDsl());
+        if(policy.getVariablePremiumDsl() != null) {
+            policyEvaluationService.validateDsl(policy.getVariablePremiumDsl());
+        }
         return policyRepository.save(policy);
     }
 

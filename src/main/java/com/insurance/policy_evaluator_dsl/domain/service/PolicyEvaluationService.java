@@ -6,9 +6,11 @@ import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
 import com.insurance.policy_evaluator_dsl.domain.model.EligibilityResult;
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import static java.math.RoundingMode.HALF_UP;
 
+@Slf4j
 @RequiredArgsConstructor
 public class PolicyEvaluationService {
 

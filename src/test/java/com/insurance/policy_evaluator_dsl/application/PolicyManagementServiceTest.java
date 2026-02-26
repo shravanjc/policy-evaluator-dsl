@@ -50,6 +50,25 @@ class PolicyManagementServiceTest {
     }
 
     @Test
+    void create_validPolicy_withoutVariableDsl_savesAndReturnsPolicy() {
+        // given
+        Policy policy = Policy.builder()
+                .name("Test")
+                .eligibilityDsl("age >= 18")
+                .basePremium(BigDecimal.valueOf(400))
+                .currency("EUR")
+                .build();
+        when(policyRepository.save(policy)).thenReturn(policy);
+
+        // when
+        Policy result = policyManagementService.create(policy);
+
+        // then
+        assertThat(result).isEqualTo(policy);
+        verify(policyRepository).save(policy);
+    }
+
+    @Test
     void create_invalidEligibilityDsl_throwsIllegalArgumentException() {
         // given
         Policy policy = Policy.builder()

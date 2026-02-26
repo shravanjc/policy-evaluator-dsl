@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static com.insurance.policy_evaluator_dsl.application.PolicyManagementService.NOT_FOUND_POLICY;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -49,13 +48,13 @@ class GlobalExceptionHandlerTest {
     @Test
     void noSuchElementException_returns404WithMessage() throws Exception {
         when(policyManagementService.findById(99L))
-                .thenThrow(new NoSuchElementException(NOT_FOUND_POLICY));
+                .thenThrow(new NoSuchElementException("Policy not found"));
 
         mockMvc.perform(get("/api/v1/policies/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value(NOT_FOUND_POLICY));
+                .andExpect(jsonPath("$.message").value("Policy not found"));
     }
 
     @Test

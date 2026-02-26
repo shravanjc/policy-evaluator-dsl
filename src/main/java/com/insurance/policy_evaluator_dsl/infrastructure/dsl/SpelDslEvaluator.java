@@ -1,11 +1,10 @@
 package com.insurance.policy_evaluator_dsl.infrastructure.dsl;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
@@ -32,32 +31,26 @@ import static java.math.BigDecimal.ZERO;
 @Component
 public class SpelDslEvaluator implements DslEvaluator {
 
-    private static final int MAX_CACHE_SIZE = 256;
     private static final Set<String> KNOWN_VARIABLES = Set.of("age", "gender", "claimFreeYears");
 
     private final SpelExpressionParser parser = new SpelExpressionParser();
 
-    // Parsing a SpEL expression is relatively expensive, so we cache compiled Expression objects.
-    // To avoid them growing indefinitely (although upper bound is 2x policies (1x eligibilityDsl, 1x variablePremiumDsl).
-    // We cache them in a bounded LRU map (cap: MAX_CACHE_SIZE entries):
-    // - LinkedHashMap access moves each entry to the tail on every read, keeping the least-recently-used entry at the head.
-    // - This would automatically is then bounded by the cache size by evicting the head.
-    // Collections.synchronizedMap wraps every operation under a single mutex, this is required
-    // because access-order LinkedHashMap mutates its structure on reads and makes it thread-safe.
-    private final Map<String, Expression> expressionCache = Collections.synchronizedMap(
-            new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<String, Expression> eldest) {
-                    return size() > MAX_CACHE_SIZE;
-                }
-            });
+    // Built once: holds only the MapAccessor configuration, no per-request state.
+    // The root object (applicant variables) is passed per-call via getValue(context, root, type).
+    private final SimpleEvaluationContext evaluationContext = SimpleEvaluationContext
+            .forPropertyAccessors(new MapAccessor())
+            .build();
+
+    // For test purposes, just keeping it simple. Should ideally be switched to Caffeine cache
+    // to main thread-safety and time or size based eviction
+    private final Map<String, Expression> expressionCache = new ConcurrentHashMap<>();
 
     @Override
     public boolean evaluateEligibility(final String dsl, final Applicant applicant) {
         if (dsl == null || applicant == null) {
             return false;
         }
-        Boolean result = validateAndParseDsl(dsl).getValue(buildContext(applicant), Boolean.class);
+        Boolean result = parseAndCache(dsl).getValue(evaluationContext, buildVariables(applicant), Boolean.class);
         return TRUE.equals(result);
     }
 
@@ -66,12 +59,16 @@ public class SpelDslEvaluator implements DslEvaluator {
         if (dsl == null || applicant == null) {
             return ZERO;
         }
-        BigDecimal result = validateAndParseDsl(dsl).getValue(buildContext(applicant), BigDecimal.class);
+        BigDecimal result = parseAndCache(dsl).getValue(evaluationContext, buildVariables(applicant), BigDecimal.class);
         return result != null ? result : ZERO;
     }
 
     @Override
-    public Expression validateAndParseDsl(final String dsl) {
+    public void validateAndParseDsl(final String dsl) {
+        parseAndCache(dsl);
+    }
+
+    private Expression parseAndCache(final String dsl) {
         return expressionCache.computeIfAbsent(dsl, key -> {
             Expression expression = parser.parseExpression(key);
             validateVariables(expression);
@@ -102,17 +99,11 @@ public class SpelDslEvaluator implements DslEvaluator {
         return names;
     }
 
-    // SimpleEvaluationContext is used intentionally over StandardEvaluationContext to restrict what
-    // the DSL can do - no arbitrary bean resolution, constructor calls, or reflective method invocations.
-    private SimpleEvaluationContext buildContext(final Applicant applicant) {
-        Map<String, Object> variables = Map.of(
+    private Map<String, Object> buildVariables(final Applicant applicant) {
+        return Map.of(
                 "age", applicant.age(),
                 "gender", applicant.gender().name(),
                 "claimFreeYears", applicant.claimFreeYears()
         );
-        return SimpleEvaluationContext
-                .forPropertyAccessors(new MapAccessor())
-                .withRootObject(variables)
-                .build();
     }
 }

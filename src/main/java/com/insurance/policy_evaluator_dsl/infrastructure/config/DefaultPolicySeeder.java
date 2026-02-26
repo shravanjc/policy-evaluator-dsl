@@ -17,7 +17,7 @@ public class DefaultPolicySeeder implements ApplicationRunner {
 
     @Override
     public void run(@NonNull ApplicationArguments args) {
-        if (!policyRepository.findAll().isEmpty()) {
+        if (policyRepository.count() > 0) {
             return;
         }
         policyRepository.save(Policy.builder()

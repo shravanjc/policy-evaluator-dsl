@@ -1,5 +1,7 @@
 package com.insurance.policy_evaluator_dsl.api;
 
+import java.math.BigDecimal;
+
 import com.insurance.policy_evaluator_dsl.api.mapper.PolicyApiMapper;
 import com.insurance.policy_evaluator_dsl.application.EvaluationService;
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
@@ -16,6 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static com.insurance.policy_evaluator_dsl.domain.model.EligibilityResult.eligible;
 import static com.insurance.policy_evaluator_dsl.domain.model.EligibilityResult.ineligible;
+import static com.insurance.policy_evaluator_dsl.domain.model.Gender.MALE;
 import static java.math.BigDecimal.valueOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -51,9 +54,9 @@ class EvaluationControllerTest {
     void evaluateApplicant_eligibleResult_returnsPremiumAndCurrency() throws Exception {
         //given
         EvaluationResponse response = new EvaluationResponse()
-                .policyId(1L).eligible(true).premium(640.0).currency("EUR");
+                .policyId(1L).eligible(true).premium(BigDecimal.valueOf(640)).currency("EUR");
 
-        when(policyApiMapper.toApplicant(any())).thenReturn(Applicant.of(35, com.insurance.policy_evaluator_dsl.domain.model.Gender.MALE, 5));
+        when(policyApiMapper.toApplicant(any())).thenReturn(Applicant.of(35, MALE, 5));
         when(evaluationService.evaluate(eq(1L), any())).thenReturn(eligible(valueOf(640), "EUR"));
         when(policyApiMapper.toEvaluationResponse(any(), eq(1L))).thenReturn(response);
 
@@ -84,7 +87,7 @@ class EvaluationControllerTest {
                 .eligible(false)
                 .reason("Applicant age below minimum threshold");
 
-        when(policyApiMapper.toApplicant(any())).thenReturn(Applicant.of(16, com.insurance.policy_evaluator_dsl.domain.model.Gender.MALE, 0));
+        when(policyApiMapper.toApplicant(any())).thenReturn(Applicant.of(16, MALE, 0));
         when(evaluationService.evaluate(eq(1L), any())).thenReturn(ineligible("Applicant age below minimum threshold"));
         when(policyApiMapper.toEvaluationResponse(any(), eq(1L))).thenReturn(response);
 

@@ -10,6 +10,7 @@ import com.insurance.policy_evaluator_dsl.generated.dto.CreatePolicyRequest;
 import com.insurance.policy_evaluator_dsl.generated.dto.PolicyResponse;
 import com.insurance.policy_evaluator_dsl.generated.dto.UpdatePremiumRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,13 +25,13 @@ public class PolicyController implements PoliciesApi {
     public ResponseEntity<PolicyResponse> createPolicy(CreatePolicyRequest createPolicyRequest) {
         final Policy policy = policyApiMapper.toDomain(createPolicyRequest);
         final PolicyResponse response = policyApiMapper.toResponse(policyManagementService.create(policy));
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Override
     public ResponseEntity<Void> deletePolicy(Long id) {
         policyManagementService.delete(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @Override

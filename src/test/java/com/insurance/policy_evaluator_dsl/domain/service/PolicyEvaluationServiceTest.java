@@ -7,6 +7,7 @@ import com.insurance.policy_evaluator_dsl.domain.model.EligibilityResult;
 import com.insurance.policy_evaluator_dsl.domain.model.Gender;
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +38,7 @@ class PolicyEvaluationServiceTest {
     void evaluatePolicyTest(
             String scenarioName,
             boolean isEligible,
-            Double basePremium,
+            BigDecimal basePremium,
             Double variablePremium,
             String currency,
             int age,
@@ -63,5 +65,13 @@ class PolicyEvaluationServiceTest {
         } else {
             assertThat(result.reason()).isEqualTo(expectedReason);
         }
+    }
+
+    @Test
+    void delegateToDslEvaluatorTest() {
+        when(dslEvaluator.validateAndParseDsl(any())).thenReturn(any());
+        final String simpleDslExpression = "age == 30";
+        service.validateDsl(simpleDslExpression);
+        verify(dslEvaluator).validateAndParseDsl(simpleDslExpression);
     }
 }

@@ -1,5 +1,6 @@
 package com.insurance.policy_evaluator_dsl.api;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.insurance.policy_evaluator_dsl.api.mapper.PolicyApiMapper;
@@ -55,7 +56,7 @@ class PolicyControllerTest {
         // given
         PolicyResponse response = new PolicyResponse()
                 .id(1L).name("My Policy").eligibilityDsl("age >= 18")
-                .basePremium(400.0).variablePremiumDsl("age * 7").currency("EUR");
+                .basePremium(BigDecimal.valueOf(400)).variablePremiumDsl("age * 7").currency("EUR");
 
         when(policyApiMapper.toDomain(any())).thenReturn(new Policy());
         when(policyManagementService.create(any())).thenReturn(new Policy());
@@ -72,7 +73,7 @@ class PolicyControllerTest {
                                   "currency": "EUR"
                                 }
                                 """))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("My Policy"))
@@ -116,12 +117,12 @@ class PolicyControllerTest {
     }
 
     @Test
-    void deletePolicy_delegatesToServiceAndReturns200() throws Exception {
+    void deletePolicy_delegatesToServiceAndReturns204() throws Exception {
         // given not needed as its delegated
 
         // when and then
         mockMvc.perform(delete("/api/v1/policies/7"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
         verify(policyManagementService).delete(7L);
     }
 
@@ -129,7 +130,7 @@ class PolicyControllerTest {
     void updatePremium_mapsRequestAndReturnsUpdatedPolicy() throws Exception {
         // given
         PolicyResponse response = new PolicyResponse()
-                .id(3L).basePremium(500.0).variablePremiumDsl("age * 9").currency("GBP");
+                .id(3L).basePremium(BigDecimal.valueOf(500)).variablePremiumDsl("age * 9").currency("GBP");
 
         when(policyManagementService.updatePremium(eq(3L), any(), any(), any()))
                 .thenReturn(new Policy());

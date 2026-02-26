@@ -99,6 +99,12 @@ tasks.register('itest', Test) {
     classpath = sourceSets.itest.runtimeClasspath
     useJUnitPlatform()
     shouldRunAfter tasks.named('test')
+    jvmArgs(
+        '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.net=ALL-UNNAMED'
+    )
 }
 
 jacoco {
@@ -114,6 +120,10 @@ def jacocoExcludes = [
 
 jacocoTestReport {
     dependsOn tasks.named('test'), tasks.named('itest')
+    executionData(
+        layout.buildDirectory.file('jacoco/test.exec'),
+        layout.buildDirectory.file('jacoco/itest.exec')
+    )
     reports {
         xml.required = true
         html.required = true

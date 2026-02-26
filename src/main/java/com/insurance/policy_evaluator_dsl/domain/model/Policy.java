@@ -1,5 +1,7 @@
 package com.insurance.policy_evaluator_dsl.domain.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,7 +35,7 @@ public class Policy {
     private String eligibilityDsl;
 
     @Column(nullable = false)
-    private Double basePremium;
+    private BigDecimal basePremium;
 
     @Column(columnDefinition = "TEXT")
     private String variablePremiumDsl;

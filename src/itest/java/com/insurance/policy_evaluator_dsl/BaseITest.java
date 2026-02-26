@@ -52,7 +52,7 @@ public abstract class BaseITest {
                 .when()
                 .post("/api/v1/policies")
                 .then()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .<Number>path("id")
                 .longValue();

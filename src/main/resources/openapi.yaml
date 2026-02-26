@@ -219,7 +219,6 @@ components:
           example: age >= 18 AND age <= 60 AND claimFreeYears >= 1
         basePremium:
           type: number
-          format: double
           description: Fixed base premium amount
           example: 400
         variablePremiumDsl:
@@ -237,7 +236,6 @@ components:
       properties:
         basePremium:
           type: number
-          format: double
           description: New fixed base premium amount
           example: 400
         variablePremiumDsl:
@@ -285,7 +283,6 @@ components:
           example: age >= 18 AND age <= 60 AND claimFreeYears >= 1
         basePremium:
           type: number
-          format: double
           example: 400
         variablePremiumDsl:
           type: string
@@ -306,7 +303,6 @@ components:
           example: true
         premium:
           type: number
-          format: double
           nullable: true
           description: Computed premium; present only when eligible
           example: 640.00

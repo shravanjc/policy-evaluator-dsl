@@ -28,12 +28,14 @@ public class PolicyController implements PoliciesApi {
 
     @Override
     public ResponseEntity<Void> deletePolicy(Long id) {
-        throw new UnsupportedOperationException("not implemented");
+        policyManagementService.delete(id);
+        return ResponseEntity.ok().build();
     }
 
     @Override
     public ResponseEntity<PolicyResponse> getPolicyById(Long id) {
-        throw new UnsupportedOperationException("not implemented");
+        final Policy policy = policyManagementService.findById(id);
+        return ResponseEntity.ok(policyApiMapper.toResponse(policy));
     }
 
     @Override
@@ -46,6 +48,7 @@ public class PolicyController implements PoliciesApi {
 
     @Override
     public ResponseEntity<PolicyResponse> updatePremium(Long id, UpdatePremiumRequest updatePremiumRequest) {
-        throw new UnsupportedOperationException("not implemented");
+        final Policy policy = policyManagementService.updatePremium(id, updatePremiumRequest.getBasePremium(), updatePremiumRequest.getVariablePremiumDsl(), updatePremiumRequest.getCurrency());
+        return ResponseEntity.ok(policyApiMapper.toResponse(policy));
     }
 }

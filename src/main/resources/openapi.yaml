@@ -57,7 +57,7 @@ paths:
               description: Description
               eligibilityDsl: age >= 18 AND age <= 60 AND claimFreeYears >= 1
               basePremium: 400
-              variablePremium: (age * 7) - (claimFreeYears * 15)
+              variablePremiumDsl: (age * 7) - (claimFreeYears * 15)
               currency: EUR
       responses:
         '201':
@@ -127,7 +127,7 @@ paths:
               $ref: '#/components/schemas/UpdatePremiumRequest'
             example:
               basePremium: 400
-              variablePremium: (age * 7) - (claimFreeYears * 15)
+              variablePremiumDsl: (age * 7) - (claimFreeYears * 15)
               currency: EUR
       responses:
         '200':
@@ -203,7 +203,7 @@ components:
 
     CreatePolicyRequest:
       type: object
-      required: [ name, eligibilityDsl, basePremium, variablePremium, currency ]
+      required: [ name, eligibilityDsl, basePremium, currency ]
       properties:
         name:
           type: string
@@ -222,7 +222,7 @@ components:
           format: double
           description: Fixed base premium amount
           example: 400
-        variablePremium:
+        variablePremiumDsl:
           type: string
           description: SpEL expression that must evaluate to a number
           example: (age * 7) - (claimFreeYears * 15)
@@ -233,14 +233,14 @@ components:
 
     UpdatePremiumRequest:
       type: object
-      required: [ basePremium, variablePremium, currency ]
+      required: [ basePremium, variablePremiumDsl, currency ]
       properties:
         basePremium:
           type: number
           format: double
           description: New fixed base premium amount
           example: 400
-        variablePremium:
+        variablePremiumDsl:
           type: string
           description: New SpEL expression for variable premium
           example: (age * 7) - (claimFreeYears * 15)
@@ -287,7 +287,7 @@ components:
           type: number
           format: double
           example: 400
-        variablePremium:
+        variablePremiumDsl:
           type: string
           example: (age * 7) - (claimFreeYears * 15)
         currency:

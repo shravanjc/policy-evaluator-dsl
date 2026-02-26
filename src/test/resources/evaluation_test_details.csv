@@ -1,0 +1,7 @@
+eligibilityDsl,variablePremiumDsl,age,gender,claimFreeYears,expectedEligible,expectedPremium
+age >= 18,age * 7,25,MALE,3,true,175
+age >= 18 AND age <= 65,(age * 8) - (claimFreeYears * 20),55,FEMALE,10,true,240
+,gender == 'FEMALE' ? 400 + (age * 6) : 420 + (age * 7),16,MALE,0,false,532
+age >= 18 AND claimFreeYears >= 1,age * 7,30,FEMALE,0,false,210
+gender == 'MALE',age * 5,40,MALE,5,true,200
+,,20,FEMALE,0,false,0

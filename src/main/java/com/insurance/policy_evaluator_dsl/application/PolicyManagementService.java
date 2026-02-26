@@ -31,10 +31,10 @@ public class PolicyManagementService {
         return policyRepository.findAll();
     }
 
-    public Policy updatePremium(final Long id, final Double basePremium, final String variablePremium, final String currency) {
+    public Policy updatePremium(final Long id, final Double basePremium, final String variablePremiumDsl, final String currency) {
         final Policy policy = findById(id);
         policy.setBasePremium(basePremium);
-        policy.setVariablePremium(variablePremium);
+        policy.setVariablePremiumDsl(variablePremiumDsl);
         policy.setCurrency(currency);
         return policyRepository.save(policy);
     }

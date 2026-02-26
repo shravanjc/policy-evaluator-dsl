@@ -37,7 +37,7 @@ class PolicyControllerIT {
                                   "name": "Test Policy",
                                   "eligibilityDsl": "age >= 18",
                                   "basePremium": 400,
-                                  "variablePremium": "age * 7",
+                                  "variablePremiumDsl": "age * 7",
                                   "currency": "EUR"
                                 }
                                 """))

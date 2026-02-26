@@ -36,7 +36,7 @@ public class Policy {
     private Double basePremium;
 
     @Column(columnDefinition = "TEXT")
-    private String variablePremium;
+    private String variablePremiumDsl;
 
     @Column(nullable = false, length = 3)
     private String currency;

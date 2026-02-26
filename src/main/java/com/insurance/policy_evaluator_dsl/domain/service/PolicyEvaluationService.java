@@ -25,4 +25,11 @@ public class PolicyEvaluationService {
                 .setScale(2, HALF_UP);
         return EligibilityResult.eligible(total, policy.getCurrency());
     }
+
+    /**
+     * Will throw an exception if the given dslExpression is invalid
+     */
+    public void validateDsl(final String dslExpression) {
+        dslEvaluator.validateAndParseDsl(dslExpression);
+    }
 }

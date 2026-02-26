@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
 import com.insurance.policy_evaluator_dsl.domain.repository.PolicyRepository;
+import com.insurance.policy_evaluator_dsl.domain.service.PolicyEvaluationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +15,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,6 +25,8 @@ class PolicyManagementServiceTest {
 
     @Mock
     private PolicyRepository policyRepository;
+    @Mock
+    private PolicyEvaluationService policyEvaluationService;
 
     @InjectMocks
     private PolicyManagementService policyManagementService;
@@ -93,5 +98,19 @@ class PolicyManagementServiceTest {
         assertThat(result.getBasePremium()).isEqualTo(400.0);
         assertThat(result.getVariablePremiumDsl()).isEqualTo("age * 7");
         assertThat(result.getCurrency()).isEqualTo("EUR");
+    }
+
+    @Test
+    void updatePremium_invalidDsl_throwsIllegalArgumentException() {
+        // given
+        Policy existing = Policy.builder().id(1L).basePremium(300.0).variablePremiumDsl("age * 5").currency("EUR").build();
+        when(policyRepository.findById(1L)).thenReturn(Optional.of(existing));
+        final String invalidPremiumDsl = "bla * 7";
+        doThrow(new IllegalArgumentException(invalidPremiumDsl))
+                .when(policyEvaluationService).validateDsl(anyString());
+
+        // when and then
+        assertThatThrownBy(() -> policyManagementService.updatePremium(1L, 400.0, invalidPremiumDsl, "EUR"))
+                .hasMessageContaining(invalidPremiumDsl);
     }
 }

@@ -7,11 +7,6 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 @SpringBootApplication
 @ConfigurationPropertiesScan
 public class PolicyEvaluatorDslApplication {
-
-    private PolicyEvaluatorDslApplication() {
-        /* This utility class should not be instantiated */
-    }
-
     static void main(String[] args) {
         SpringApplication.run(PolicyEvaluatorDslApplication.class, args);
     }

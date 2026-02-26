@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
 import com.insurance.policy_evaluator_dsl.domain.repository.PolicyRepository;
+import com.insurance.policy_evaluator_dsl.domain.service.PolicyEvaluationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ public class PolicyManagementService {
 
     public static final String NOT_FOUND_POLICY = "Policy not found";
     private final PolicyRepository policyRepository;
+    private final PolicyEvaluationService policyEvaluationService;
 
     public Policy create(Policy policy) {
         return policyRepository.save(policy);
@@ -34,7 +36,11 @@ public class PolicyManagementService {
     public Policy updatePremium(final Long id, final Double basePremium, final String variablePremiumDsl, final String currency) {
         final Policy policy = findById(id);
         policy.setBasePremium(basePremium);
+
+        //validate and set dsl
+        policyEvaluationService.validateDsl(variablePremiumDsl);
         policy.setVariablePremiumDsl(variablePremiumDsl);
+
         policy.setCurrency(currency);
         return policyRepository.save(policy);
     }

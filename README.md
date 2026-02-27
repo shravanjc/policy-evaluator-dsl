@@ -203,3 +203,46 @@ POST /api/v1/policies/{id}/evaluate
 ```
 
 ---
+## Future Design Goals
+
+This section outlines how the system could evolve from a demo into a production-grade, multi-tenant policy evaluation platform.
+
+### 1. Scale and Performance
+
+- Support high throughput (tens of thousands of evaluations per second) by keeping the evaluator stateless and horizontally scalable.
+- Introduce Caffeine (for single pod) or Redis (for full scale distributed caching) of compiled DSL expressions to avoid re-parsing rules on every request while keeping cache invalidation explicit and test-covered.
+- Indexing and optimizing database access patterns for any bulk evaluations requests (e.g., batched fetches of policies, read-only replicas for evaluation traffic).
+
+### 2. Safety and Correctness
+
+- Harden the DSL sandbox so rules cannot access arbitrary classes, reflection, I/O, or network calls, and can only see a carefully curated set of variables and functions.
+- Enable policy audit that captures policy version, input snapshot, and final outcome to enable post-hoc analysis and reproducibility.
+
+### 3. Domain and DSL Evolution
+
+- Introduce a versioned policy lifecycle with states such as `DRAFT`, `PUBLISHED`, and `DEPRECATED`, keeping historical versions immutable so past decisions can be replayed exactly.
+- Define a formal “DSL schema” describing allowed variables, functions, and operators, and control new features via feature flags per environment or tenant.
+- Generalize from a single policy type to multiple product lines with configurable DSL variables used in evaluation while reusing the same evaluation engine.
+
+### 4. API, Contracts, and Evolution
+
+- Document an API evolution strategy: additive changes first, explicit deprecation periods, and (if needed) versioned endpoints or resource representations.
+- Add contract tests that verify the generated OpenAPI DTOs and controllers remain backward compatible as the domain model evolves.
+- Define compatibility tests between DSL versions so existing policies continue to evaluate correctly when new DSL features are introduced.
+
+### 5. Observability and Operations
+
+- Expose metrics via prometheus and grafana such as evaluation latency (p50, p95, p99), error rates by error category, cache hit ratio, and evaluation volume per policy version.
+- Set explicit SLOs for availability and latency, and implement timeouts, retries, and circuit breakers for external dependencies such as databases.
+
+### 6. Security and Multi-Tenancy
+
+- Add first-class tenant concepts to the domain and persistence layers, ensuring strict tenant scoping for policies and evaluations and preventing cross-tenant data access.
+- Integrate a RBAC (role based access control) authorization layer that controls who can create, edit, and publish policies or rules, and who can invoke evaluations, with all actions audited.
+- Document and test the security model of the SpEL configuration, including explicit tests for attempts to bypass the sandbox.
+
+### 7. Platform and Ecosystem
+
+- Extend the `DslEvaluator` port truly custom and domain specific when the criteria goes beyond Spring's Expression Language set. Current design supports this loosely coupled system via interfaces.
+- Dockerize the application and create Github actions for automatic build and artifact deployment to AWS (or other cloud provider) as part of CI/CD orchestration. 
+- Describe deployment and rollout strategies (blue/green, canary) for new policy versions and DSL features, including schema migration and rollback plans.

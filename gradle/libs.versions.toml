@@ -1,5 +1,6 @@
 [versions]
 archunit = "1.4.1"
+jqwik = "1.9.3"
 java-toolchain = "25"
 mapstruct = "1.6.3"
 openapi-generator = "7.20.0"
@@ -11,6 +12,7 @@ lombok = "1.18.42"
 
 [libraries]
 archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
+jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }

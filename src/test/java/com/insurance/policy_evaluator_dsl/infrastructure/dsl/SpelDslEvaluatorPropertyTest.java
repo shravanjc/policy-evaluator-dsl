@@ -31,8 +31,8 @@ class SpelDslEvaluatorPropertyTest {
     // Invariant 1: Sandbox: arbitrary strings only surface typed exceptions
     @Property
     void arbitraryDsl_eligibility_onlyThrowsTypedExceptions(
-            @ForAll String dsl,
-            @ForAll("applicants") Applicant applicant) {
+            @ForAll final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
         assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
                 .satisfiesAnyOf(
                         code -> assertThat(code).doesNotThrowAnyException(),
@@ -44,8 +44,8 @@ class SpelDslEvaluatorPropertyTest {
 
     @Property
     void arbitraryDsl_premium_onlyThrowsTypedExceptions(
-            @ForAll String dsl,
-            @ForAll("applicants") Applicant applicant) {
+            @ForAll final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
         assertThatCode(() -> evaluator.evaluatePremium(dsl, applicant))
                 .satisfiesAnyOf(
                         code -> assertThat(code).doesNotThrowAnyException(),
@@ -58,39 +58,39 @@ class SpelDslEvaluatorPropertyTest {
     // Invariant 2: Idempotency: same inputs, same output (validates caching correctness)
     @Property
     void eligibility_isIdempotent(
-            @ForAll("validBooleanDsls") String dsl,
-            @ForAll("applicants") Applicant applicant) {
+            @ForAll("validBooleanDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
         assertThat(evaluator.evaluateEligibility(dsl, applicant))
                 .isEqualTo(evaluator.evaluateEligibility(dsl, applicant));
     }
 
     @Property
     void premium_isIdempotent(
-            @ForAll("validPremiumDsls") String dsl,
-            @ForAll("applicants") Applicant applicant) {
+            @ForAll("validPremiumDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
         assertThat(evaluator.evaluatePremium(dsl, applicant))
                 .isEqualByComparingTo(evaluator.evaluatePremium(dsl, applicant));
     }
 
     // Invariant 3: Null safety: declared defaults, never exceptions
     @Property
-    void nullDsl_eligibility_returnsFalse(@ForAll("applicants") Applicant applicant) {
+    void nullDsl_eligibility_returnsFalse(@ForAll("applicants") final Applicant applicant) {
         assertThat(evaluator.evaluateEligibility(null, applicant)).isFalse();
     }
 
     @Property
-    void nullApplicant_eligibility_returnsFalse(@ForAll String dsl) {
+    void nullApplicant_eligibility_returnsFalse(@ForAll final String dsl) {
         assertThat(evaluator.evaluateEligibility(dsl, null)).isFalse();
     }
 
     @Property
-    void nullDsl_premium_returnsZero(@ForAll("applicants") Applicant applicant) {
+    void nullDsl_premium_returnsZero(@ForAll("applicants") final Applicant applicant) {
         assertThat(evaluator.evaluatePremium(null, applicant))
                 .isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Property
-    void nullApplicant_premium_returnsZero(@ForAll String dsl) {
+    void nullApplicant_premium_returnsZero(@ForAll final String dsl) {
         assertThat(evaluator.evaluatePremium(dsl, null))
                 .isEqualByComparingTo(BigDecimal.ZERO);
     }
@@ -98,8 +98,8 @@ class SpelDslEvaluatorPropertyTest {
     // Invariant 4: Known-variable contract: never rejected for "unknown variable"
     @Property
     void validBooleanDsl_neverRejectsKnownVariables(
-            @ForAll("validBooleanDsls") String dsl,
-            @ForAll("applicants") Applicant applicant) {
+            @ForAll("validBooleanDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
         // only a SpEL type-mismatch at runtime is admissible
         assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
                 .satisfiesAnyOf(
@@ -109,15 +109,15 @@ class SpelDslEvaluatorPropertyTest {
 
     @Property
     void validPremiumDsl_returnsNonNull(
-            @ForAll("validPremiumDsls") String dsl,
-            @ForAll("applicants") Applicant applicant) {
+            @ForAll("validPremiumDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
         assertThat(evaluator.evaluatePremium(dsl, applicant)).isNotNull();
     }
 
     @Property
     void unknownVariableDsl_alwaysThrowsIllegalArgumentException(
-            @ForAll("unknownVariableDsls") String dsl,
-            @ForAll("applicants") Applicant applicant) {
+            @ForAll("unknownVariableDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
         assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("unknown variable");
@@ -125,8 +125,8 @@ class SpelDslEvaluatorPropertyTest {
 
     @Property
     void malformedDsl_alwaysThrowsSpelParseException(
-            @ForAll("malformedDsls") String dsl,
-            @ForAll("applicants") Applicant applicant) {
+            @ForAll("malformedDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
         assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
                 .isInstanceOf(SpelParseException.class);
     }

@@ -22,20 +22,20 @@ public class PolicyController implements PoliciesApi {
     private final PolicyApiMapper policyApiMapper;
 
     @Override
-    public ResponseEntity<PolicyResponse> createPolicy(CreatePolicyRequest createPolicyRequest) {
+    public ResponseEntity<PolicyResponse> createPolicy(final CreatePolicyRequest createPolicyRequest) {
         final Policy policy = policyApiMapper.toDomain(createPolicyRequest);
         final PolicyResponse response = policyApiMapper.toResponse(policyManagementService.create(policy));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Override
-    public ResponseEntity<Void> deletePolicy(Long id) {
+    public ResponseEntity<Void> deletePolicy(final Long id) {
         policyManagementService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @Override
-    public ResponseEntity<PolicyResponse> getPolicyById(Long id) {
+    public ResponseEntity<PolicyResponse> getPolicyById(final Long id) {
         final Policy policy = policyManagementService.findById(id);
         return ResponseEntity.ok(policyApiMapper.toResponse(policy));
     }
@@ -49,7 +49,7 @@ public class PolicyController implements PoliciesApi {
     }
 
     @Override
-    public ResponseEntity<PolicyResponse> updatePremium(Long id, UpdatePremiumRequest updatePremiumRequest) {
+    public ResponseEntity<PolicyResponse> updatePremium(final Long id, final UpdatePremiumRequest updatePremiumRequest) {
         final Policy policy = policyManagementService.updatePremium(id, updatePremiumRequest.getBasePremium(), updatePremiumRequest.getVariablePremiumDsl(), updatePremiumRequest.getCurrency());
         return ResponseEntity.ok(policyApiMapper.toResponse(policy));
     }

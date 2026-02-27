@@ -16,7 +16,7 @@ public class PolicyEvaluationService {
 
     private final DslEvaluator dslEvaluator;
 
-    public EligibilityResult evaluate(Policy policy, Applicant applicant) {
+    public EligibilityResult evaluate(final Policy policy, final Applicant applicant) {
         boolean isEligible = dslEvaluator.evaluateEligibility(policy.getEligibilityDsl(), applicant);
         if (!isEligible) {
             return EligibilityResult.ineligible("Not eligible. Valid criteria: " + policy.getEligibilityDsl());

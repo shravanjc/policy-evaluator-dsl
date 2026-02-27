@@ -20,13 +20,13 @@ class SpelDslEvaluatorTest {
     @ParameterizedTest
     @CsvFileSource(resources = "/evaluation_test_details.csv", numLinesToSkip = 1, nullValues = "NULL")
     void evaluatePolicyTest(
-            String eligibilityDsl,
-            String variablePremiumDsl,
-            Integer age,
-            Gender gender,
-            Integer claimFreeYears,
-            boolean expectedEligible,
-            BigDecimal expectedPremium) {
+            final String eligibilityDsl,
+            final String variablePremiumDsl,
+            final Integer age,
+            final Gender gender,
+            final Integer claimFreeYears,
+            final boolean expectedEligible,
+            final BigDecimal expectedPremium) {
 
         Applicant applicant = Applicant.of(age, gender, claimFreeYears);
 
@@ -43,7 +43,7 @@ class SpelDslEvaluatorTest {
             "age >= 18 AND salary > 50000",      // mix of known and unknown
             "foo == 'MALE'",                     // unknown string-typed variable
     })
-    void evaluateEligibility_unknownVariable_throwsIllegalArgumentException(String invalidDsl) {
+    void evaluateEligibility_unknownVariable_throwsIllegalArgumentException(final String invalidDsl) {
         Applicant applicant = Applicant.of(25, Gender.MALE, 3);
 
         assertThatThrownBy(() -> dslEvaluator.evaluateEligibility(invalidDsl, applicant))
@@ -55,7 +55,7 @@ class SpelDslEvaluatorTest {
         "salary * 0.1",                      // fully unknown variable
         "age * multiplier",                   // mix of known and unknown
     })
-    void evaluatePremium_unknownVariable_throwsIllegalArgumentException(String invalidDsl) {
+    void evaluatePremium_unknownVariable_throwsIllegalArgumentException(final String invalidDsl) {
         Applicant applicant = Applicant.of(25, Gender.MALE, 3);
 
         assertThatThrownBy(() -> dslEvaluator.evaluatePremium(invalidDsl, applicant))
@@ -64,7 +64,7 @@ class SpelDslEvaluatorTest {
 
     @ParameterizedTest(name = "DSL validation with {0} throws IllegalArgumentException")
     @NullAndEmptySource
-    void validateDsl_throwsIllegalArgumentException(String invalidDsl) {
+    void validateDsl_throwsIllegalArgumentException(final String invalidDsl) {
         assertThatThrownBy(() -> dslEvaluator.validateAndParseDsl(invalidDsl))
                 .hasMessageContaining("DSL expression must not be null");
     }

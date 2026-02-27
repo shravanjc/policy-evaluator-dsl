@@ -6,9 +6,9 @@ import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
 
 public interface DslEvaluator {
 
-    boolean evaluateEligibility(String dsl, Applicant applicant);
+    boolean evaluateEligibility(final String dsl, final Applicant applicant);
 
-    BigDecimal evaluatePremium(String dsl, Applicant applicant);
+    BigDecimal evaluatePremium(final String dsl, final Applicant applicant);
 
-    void validateAndParseDsl(String dsl);
+    void validateAndParseDsl(final String dsl);
 }

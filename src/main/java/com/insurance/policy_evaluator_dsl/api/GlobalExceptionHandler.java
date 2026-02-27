@@ -22,19 +22,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFound(NoSuchElementException ex) {
+    public ErrorResponse handleNotFound(final NoSuchElementException ex) {
         return errorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBadRequest(IllegalArgumentException ex) {
+    public ErrorResponse handleBadRequest(final IllegalArgumentException ex) {
         return errorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidation(MethodArgumentNotValidException ex) {
+    public ErrorResponse handleValidation(final MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(fe -> fe.getField() + " " + fe.getDefaultMessage())
                 .collect(Collectors.joining(", "));
@@ -43,12 +43,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleUnexpected(Exception ex) {
+    public ErrorResponse handleUnexpected(final Exception ex) {
         log.error("Unhandled exception", ex);
         return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
     }
 
-    private static ErrorResponse errorResponse(HttpStatus status, String message) {
+    private static ErrorResponse errorResponse(final HttpStatus status, final String message) {
         ErrorResponse response = new ErrorResponse();
         response.setStatus(status.value());
         response.setMessage(message);

@@ -10,7 +10,7 @@ public class DomainServiceConfig {
 
     //We add it to the Spring context here to keep domain package as framework independent as possible.
     @Bean
-    public PolicyEvaluationService policyEvaluationService(DslEvaluator dslEvaluator) {
+    public PolicyEvaluationService policyEvaluationService(final DslEvaluator dslEvaluator) {
         return new PolicyEvaluationService(dslEvaluator);
     }
 }

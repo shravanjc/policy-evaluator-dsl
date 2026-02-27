@@ -18,7 +18,7 @@ public class EvaluationController implements EvaluationApi {
     private final PolicyApiMapper policyApiMapper;
 
     @Override
-    public ResponseEntity<EvaluationResponse> evaluateApplicant(Long policyId, EvaluationRequest evaluationRequest) {
+    public ResponseEntity<EvaluationResponse> evaluateApplicant(final Long policyId, final EvaluationRequest evaluationRequest) {
         final EligibilityResult result = evaluationService.evaluate(policyId, policyApiMapper.toApplicant(evaluationRequest));
         return ResponseEntity.ok(policyApiMapper.toEvaluationResponse(result, policyId));
     }

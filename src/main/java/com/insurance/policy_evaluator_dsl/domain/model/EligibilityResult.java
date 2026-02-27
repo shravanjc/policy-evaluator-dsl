@@ -8,11 +8,11 @@ public record EligibilityResult(
         String currency,
         String reason
 ) {
-    public static EligibilityResult eligible(BigDecimal premium, String currency) {
+    public static EligibilityResult eligible(final BigDecimal premium, final String currency) {
         return new EligibilityResult(true, premium, currency, null);
     }
 
-    public static EligibilityResult ineligible(String reason) {
+    public static EligibilityResult ineligible(final String reason) {
         return new EligibilityResult(false, null, null, reason);
     }
 }

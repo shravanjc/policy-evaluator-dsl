@@ -94,6 +94,7 @@ tasks.named('test') {
 }
 
 tasks.named('check') {
+    dependsOn tasks.named('test')
     dependsOn tasks.named('itest')
 }
 

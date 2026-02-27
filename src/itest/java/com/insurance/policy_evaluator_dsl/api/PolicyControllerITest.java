@@ -1,5 +1,7 @@
 package com.insurance.policy_evaluator_dsl.api;
 
+import java.math.BigDecimal;
+
 import com.insurance.policy_evaluator_dsl.BaseITest;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
@@ -23,7 +25,7 @@ class PolicyControllerITest extends BaseITest {
 
     @Test
     void updatePremium_isReflectedOnSubsequentGet() {
-        long id = createPolicy("My Policy", "age >= 18", 400.0, "age * 7", "EUR");
+        long id = createPolicy("My Policy", "age >= 18", BigDecimal.valueOf(400.0), "age * 7", "EUR");
 
         given()
                 .contentType(ContentType.JSON)

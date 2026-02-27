@@ -16,7 +16,7 @@ public class EvaluationService {
     private final PolicyManagementService policyManagementService;
     private final PolicyEvaluationService policyEvaluationService;
 
-    public EligibilityResult evaluate(Long policyId, Applicant applicant) {
+    public EligibilityResult evaluate(final Long policyId, final Applicant applicant) {
         Policy policy = policyManagementService.findById(policyId);
         return policyEvaluationService.evaluate(policy, applicant);
     }

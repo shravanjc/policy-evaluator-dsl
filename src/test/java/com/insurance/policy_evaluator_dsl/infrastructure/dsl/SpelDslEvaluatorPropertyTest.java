@@ -23,6 +23,9 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  * 3. Null safety - null DSL or null applicant returns the declared default, never an exception.
  * 4. Known-variable contract – DSLs that only reference known variables are never rejected.
  *    Unknown-variable contract - Failure with type-mismatch at evaluation time.
+ * 5. Security - Malicious expressions (T() references, constructors, method chains, bean refs)
+ *    are blocked by the SimpleEvaluationContext sandbox with a typed exception, never silently
+ *    evaluated or re-thrown as untyped errors.
  */
 class SpelDslEvaluatorPropertyTest {
 
@@ -131,6 +134,39 @@ class SpelDslEvaluatorPropertyTest {
                 .isInstanceOf(SpelParseException.class);
     }
 
+    // Invariant 5: Security — engine fails fast and predictably on malicious inputs.
+    @Property
+    void typeReferenceDsl_alwaysBlockedBySandbox(
+            @ForAll("typeReferenceDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
+        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
+                .isInstanceOf(SpelEvaluationException.class);
+    }
+
+    @Property
+    void constructorCallDsl_alwaysBlockedBySandbox(
+            @ForAll("constructorCallDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
+        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
+                .isInstanceOf(SpelEvaluationException.class);
+    }
+
+    @Property
+    void methodChainOnKnownVar_alwaysBlockedBySandbox(
+            @ForAll("methodChainDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
+        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
+                .isInstanceOfAny(SpelEvaluationException.class, IllegalArgumentException.class);
+    }
+    
+    @Property
+    void beanReferenceDsl_alwaysBlockedBySandbox(
+            @ForAll("beanReferenceDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
+        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
+                .isInstanceOf(SpelEvaluationException.class);
+    }
+
     @Provide
     Arbitrary<Applicant> applicants() {
         return Combinators.combine(
@@ -184,5 +220,68 @@ class SpelDslEvaluatorPropertyTest {
 
         return Combinators.combine(base, ageFactor, cfyDiscount)
                 .as("%d + (age * %d) - (claimFreeYears * %d)"::formatted);
+    }
+
+    // -------------------------------------------------------------------------
+    // Security providers — malicious / unsafe expression patterns
+    // -------------------------------------------------------------------------
+
+    @Provide
+    Arbitrary<String> typeReferenceDsls() {
+        // T(ClassName) attempts — each one either resolves to a class that still requires a
+        // method call (which has no resolver) or is outright blocked by the type locator.
+        // Either way the engine must surface SpelEvaluationException, never execute the call.
+        return Arbitraries.of(
+                "T(java.lang.Runtime).getRuntime().exec('id') != null",
+                "T(java.lang.System).exit(0) == 0",
+                "T(java.lang.Class).forName('java.lang.Runtime') != null",
+                "T(java.lang.ProcessBuilder) != null",
+                "T(java.lang.Thread).currentThread().getName() != null",
+                "T(java.lang.Math).random() > 0"   // Math is "safe" but random() has no resolver
+        );
+    }
+
+    @Provide
+    Arbitrary<String> constructorCallDsls() {
+        // new ClassName(arg) — SimpleEvaluationContext has no ConstructorResolver, so object
+        // construction is unconditionally blocked regardless of which class is targeted.
+        Arbitrary<String> className = Arbitraries.of(
+                "java.lang.ProcessBuilder",
+                "java.io.File",
+                "java.net.URL",
+                "java.lang.StringBuilder"
+        );
+        Arbitrary<String> arg = Arbitraries.of("'cmd'", "'/etc/passwd'", "'http://x.com'", "'x'");
+        return Combinators.combine(className, arg)
+                .as((cn, a) -> "new " + cn + "(" + a + ") != null");
+    }
+
+    @Provide
+    Arbitrary<String> methodChainDsls() {
+        // knownVar.method() — MapAccessor resolves the variable to a boxed value, but there is
+        // no MethodResolver in the context, so any subsequent method call must be rejected.
+        Arbitrary<String> knownVar = Arbitraries.of("age", "claimFreeYears");
+        Arbitrary<String> chain = Arbitraries.of(
+                ".getClass().getName()",
+                ".getClass().getClassLoader()",
+                ".toString().length()",
+                ".hashCode()"
+        );
+        return Combinators.combine(knownVar, chain)
+                .as((v, c) -> v + c + " != null");
+    }
+
+    @Provide
+    Arbitrary<String> beanReferenceDsls() {
+        // @beanName — SimpleEvaluationContext has no BeanResolver, so Spring bean lookups
+        // must always throw SpelEvaluationException rather than leaking application context state.
+        Arbitrary<String> beanName = Arbitraries.of(
+                "service", "repository", "factory", "context", "evaluator"
+        );
+        Arbitrary<String> operation = Arbitraries.of(
+                ".doSomething()", ".getData()", ".execute()"
+        );
+        return Combinators.combine(beanName, operation)
+                .as((b, op) -> "@" + b + op + " != null");
     }
 }

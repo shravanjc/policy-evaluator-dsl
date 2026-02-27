@@ -16,7 +16,7 @@ public class DefaultPolicySeeder implements ApplicationRunner {
     private final PolicyRepository policyRepository;
 
     @Override
-    public void run(@NonNull ApplicationArguments args) {
+    public void run(@NonNull final ApplicationArguments args) {
         if (policyRepository.count() > 0) {
             return;
         }

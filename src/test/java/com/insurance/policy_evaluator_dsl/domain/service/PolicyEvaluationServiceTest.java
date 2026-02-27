@@ -37,16 +37,16 @@ class PolicyEvaluationServiceTest {
     @ParameterizedTest
     @CsvFileSource(resources = "/policy_premium_details.csv", numLinesToSkip = 1, nullValues = "NULL")
     void evaluatePolicyTest(
-            String scenarioName,
-            boolean isEligible,
-            BigDecimal basePremium,
-            Double variablePremium,
-            String currency,
-            int age,
-            Gender gender,
-            int claimFreeYears,
-            BigDecimal expectedPremium,
-            String expectedReason) {
+            final String scenarioName,
+            final boolean isEligible,
+            final BigDecimal basePremium,
+            final Double variablePremium,
+            final String currency,
+            final int age,
+            final Gender gender,
+            final int claimFreeYears,
+            final BigDecimal expectedPremium,
+            final String expectedReason) {
 
         Policy policy = Policy.builder()
                 .basePremium(basePremium)

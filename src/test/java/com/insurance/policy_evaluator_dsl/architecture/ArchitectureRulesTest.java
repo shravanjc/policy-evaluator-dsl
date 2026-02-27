@@ -44,10 +44,10 @@ class ArchitectureRulesTest {
                     .whereLayer("domain").mayOnlyBeAccessedByLayers("api", "application", "infrastructure")
                     .whereLayer("infrastructure").mayNotBeAccessedByAnyLayer();
 
-    private static ArchCondition<JavaClass> implementAtLeastOneInterfaceFromPackage(String pkg) {
+    private static ArchCondition<JavaClass> implementAtLeastOneInterfaceFromPackage(final String pkg) {
         return new ArchCondition<>("implement at least one interface from package " + pkg) {
             @Override
-            public void check(JavaClass item, ConditionEvents events) {
+            public void check(final JavaClass item, final ConditionEvents events) {
                 boolean implementsOne = item.getInterfaces().stream()
                         .anyMatch(i -> i.toErasure().getPackageName().startsWith(pkg));
                 if (!implementsOne) {

@@ -16,12 +16,12 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 public interface PolicyApiMapper {
 
     @Mapping(target = "id", ignore = true)
-    Policy toDomain(CreatePolicyRequest request);
+    Policy toDomain(final CreatePolicyRequest request);
 
-    PolicyResponse toResponse(Policy policy);
+    PolicyResponse toResponse(final Policy policy);
 
-    Applicant toApplicant(EvaluationRequest request);
+    Applicant toApplicant(final EvaluationRequest request);
 
     @Mapping(target = ".", source = "result")
-    EvaluationResponse toEvaluationResponse(EligibilityResult result, Long policyId);
+    EvaluationResponse toEvaluationResponse(final EligibilityResult result, final Long policyId);
 }

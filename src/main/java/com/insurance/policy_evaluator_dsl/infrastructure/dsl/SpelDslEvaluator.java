@@ -43,7 +43,7 @@ public class SpelDslEvaluator implements DslEvaluator {
             .build();
 
     // For test purposes, just keeping it simple. Should ideally be switched to Caffeine cache
-    // to main thread-safety and time or size based eviction
+    // to maintain time or size based eviction
     private final Map<String, Expression> expressionCache = new ConcurrentHashMap<>();
 
     @Override

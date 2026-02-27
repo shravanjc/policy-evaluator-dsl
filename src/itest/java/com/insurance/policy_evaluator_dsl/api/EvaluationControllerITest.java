@@ -1,5 +1,7 @@
 package com.insurance.policy_evaluator_dsl.api;
 
+import java.math.BigDecimal;
+
 import com.insurance.policy_evaluator_dsl.BaseITest;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
@@ -14,7 +16,7 @@ class EvaluationControllerITest extends BaseITest {
     @Test
     void evaluate_compoundDsl_applicantIneligible() {
         // Applicant is 30 (passes age >= 18) but has 0 claim-free years (fails claimFreeYears >= 2)
-        long id = createPolicy("Strict Policy", "age >= 18 AND claimFreeYears >= 2", 400.0, "age * 7", "EUR");
+        long id = createPolicy("Strict Policy", "age >= 18 AND claimFreeYears >= 2", BigDecimal.valueOf(400.0), "age * 7", "EUR");
 
         given()
                 .contentType(ContentType.JSON)
@@ -37,7 +39,7 @@ class EvaluationControllerITest extends BaseITest {
     @Test
     void evaluate_genderConditionalPremiumDsl_withUpdatedPremiumDsl_isEligible() {
         // variablePremiumDsl branches on gender: FEMALE → age * 5, MALE → age * 7
-        final long id = createPolicy("Gendered Policy", "age >= 18", 400.0,
+        final long id = createPolicy("Gendered Policy", "age >= 18", BigDecimal.valueOf(400.0),
                 "gender == 'FEMALE' ? age * 5 : age * 7", "EUR");
 
         given()
@@ -54,7 +56,7 @@ class EvaluationControllerITest extends BaseITest {
 
         // update variable rates
         // variablePremiumDsl branches on gender: MALE → age * 6, FEMALE → age * 7
-        updatePremium(id, 450,"gender == 'MALE' ? age * 6 : age * 7","EUR");
+        updatePremium(id, BigDecimal.valueOf(450),"gender == 'MALE' ? age * 6 : age * 7","EUR");
         given()
                 .contentType(ContentType.JSON)
                 .body("""

@@ -1,5 +1,7 @@
 package com.insurance.policy_evaluator_dsl;
 
+import java.math.BigDecimal;
+
 import com.insurance.policy_evaluator_dsl.infrastructure.persistence.PolicyJpaRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -36,8 +38,8 @@ public abstract class BaseITest {
         policyJpaRepository.deleteAll();
     }
 
-    protected long createPolicy(String name, String eligibilityDsl,
-                                double basePremium, String variablePremiumDsl, String currency) {
+    protected long createPolicy(final String name, final String eligibilityDsl,
+                                final BigDecimal basePremium, final String variablePremiumDsl, final String currency) {
         return given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -58,7 +60,7 @@ public abstract class BaseITest {
                 .longValue();
     }
 
-    protected void updatePremium(long policyId, double basePremium, String variablePremiumDsl, String currency) {
+    protected void updatePremium(final long policyId, final BigDecimal basePremium, final String variablePremiumDsl, final String currency) {
         given()
                 .contentType(ContentType.JSON)
                 .body("""

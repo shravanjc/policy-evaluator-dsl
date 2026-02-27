@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,7 +70,7 @@ class PolicyEvaluationServiceTest {
 
     @Test
     void delegateToDslEvaluatorTest() {
-        when(dslEvaluator.validateAndParseDsl(any())).thenReturn(any());
+        doNothing().when(dslEvaluator).validateAndParseDsl(any());
         final String simpleDslExpression = "age == 30";
         service.validateDsl(simpleDslExpression);
         verify(dslEvaluator).validateAndParseDsl(simpleDslExpression);

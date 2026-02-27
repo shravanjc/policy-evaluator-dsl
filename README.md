@@ -2,10 +2,7 @@
 
 - Evaluates insurance policy eligibility for member details and computes premiums using a custom
   DSL 'rule engine' (Spring Expression Language).
-- Default rules are set in [application.properties](./src/main/resources/application.properties)
-    - They can be updated at runtime (without a server restart to simulate an external config setup
-      in production)
-- Policy specific rules can be set to override that.
+- They can be set at individual policy level.
 - Uses H2 in-memory SQL database for demo purposes.
 
 ## Stack:
@@ -51,6 +48,19 @@ its ports (`PolicyRepository`, `DslEvaluator`).
 | Infrastructure – DSL         | `infrastructure/dsl/`         | `SpelDslEvaluator`                                                          | SpEL implementation of `DslEvaluator`                                 |
 | Infrastructure – config      | `infrastructure/config/`      | `PolicyProperties`, `DefaultPolicySeeder`                                   | Config-property binding and default data seeding                      |
 
+### Tests covered
+
+| Type                               | Why                                                                                                                                                                                                                                                                                                                 | Location                                                                                                                                                                                                                                                                   |
+|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Controller contract**            | Verifies HTTP status codes, request/response shapes and JSON field mapping without a running server. MockMvc + Mockito; services are mocked so failures are always in the controller layer.                                                                                                                         | [`api/PolicyControllerTest`](src/test/java/com/insurance/policy_evaluator_dsl/api/PolicyControllerTest.java), [`api/EvaluationControllerTest`](src/test/java/com/insurance/policy_evaluator_dsl/api/EvaluationControllerTest.java)                                         |
+| **Global exception handler**       | Proves the advice maps each exception type to the correct HTTP status and that internal details are never leaked (500 returns a generic message). Uses real controllers with mocked services to keep ArchUnit happy.                                                                                                | [`api/GlobalExceptionHandlerTest`](src/test/java/com/insurance/policy_evaluator_dsl/api/GlobalExceptionHandlerTest.java)                                                                                                                                                   |
+| **Application service**            | Validates use-case orchestration: correct delegation to repository and domain service, `NoSuchElementException` on missing policy, DSL validation on create/update.                                                                                                                                                 | [`application/PolicyManagementServiceTest`](src/test/java/com/insurance/policy_evaluator_dsl/application/PolicyManagementServiceTest.java), [`application/EvaluationServiceTest`](src/test/java/com/insurance/policy_evaluator_dsl/application/EvaluationServiceTest.java) |
+| **Domain service (parameterised)** | Data-driven eligibility + premium scenarios loaded from CSV, covering eligible, ineligible and boundary cases. Adding a new scenario requires only a new CSV row.                                                                                                                                                   | [`domain/service/PolicyEvaluationServiceTest`](src/test/java/com/insurance/policy_evaluator_dsl/domain/service/PolicyEvaluationServiceTest.java), [`policy_premium_details.csv`](src/test/resources/policy_premium_details.csv)                                            |
+| **DSL evaluator (parameterised)**  | Tests the SpEL implementation directly against real expression/applicant combinations from CSV; also tests that DSLs referencing unknown variables are rejected with `IllegalArgumentException`.                                                                                                                    | [`infrastructure/dsl/SpelDslEvaluatorTest`](src/test/java/com/insurance/policy_evaluator_dsl/infrastructure/dsl/SpelDslEvaluatorTest.java), [`evaluation_test_details.csv`](src/test/resources/evaluation_test_details.csv)                                                |
+| **DSL evaluator (property-based)** | jqwik generates thousands of inputs to verify invariants that example tests cannot exhaustively cover: sandbox safety (arbitrary strings only surface typed exceptions), idempotency (cache correctness), null-input defaults, known-variable contract, unknown-variable rejection, and malformed-syntax rejection. | [`infrastructure/dsl/SpelDslEvaluatorPropertyTest`](src/test/java/com/insurance/policy_evaluator_dsl/infrastructure/dsl/SpelDslEvaluatorPropertyTest.java)                                                                                                                 |
+| **Architecture**                   | ArchUnit rules enforced on every build: layer dependency direction, all `@RestController` classes must implement a generated API interface, all `@Service` classes must be `@Transactional`. Prevents accidental cross-layer shortcuts from being silently introduced.                                              | [`architecture/ArchitectureRulesTest`](src/test/java/com/insurance/policy_evaluator_dsl/architecture/ArchitectureRulesTest.java)                                                                                                                                           |
+| **Integration (full stack)**       | Boots a real Spring context against an in-memory H2 database, exercises the HTTP stack end-to-end via REST Assured. Covers create → evaluate, update-premium → re-evaluate, and error paths against live data.                                                                                                      | [`src/itest`](src/itest/java/com/insurance/policy_evaluator_dsl/api/)                                                                                                                                                                                                      |
+
 ---
 
 ## Quick Start
@@ -62,15 +72,30 @@ interfaces and dtos based on the: [OpenApiSpec](./src/main/resources/openapi.yam
 ./gradlew bootRun
 ```
 
-Open http://localhost:8080/swagger-ui.html
+Open http://localhost:8080/swagger-ui.html for accessing and trying all APIs.
 
 ---
 
 ## Build & Test
 
 ```bash
-# All unit + integration tests
+# Unit tests only (controller, service, domain, DSL evaluator, architecture)
 ./gradlew test
+```
+
+```
+# Integration tests only (full-stack REST Assured against embedded H2)
+./gradlew itest
+```
+
+```
+# All tests
+./gradlew check
+```
+
+```
+# Generate jacoco coverage reports
+./gradlew jacocoTestReport
 ```
 
 ---

@@ -7,6 +7,7 @@ import com.insurance.policy_evaluator_dsl.domain.model.Gender;
 import com.insurance.policy_evaluator_dsl.domain.service.DslEvaluator;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,5 +60,12 @@ class SpelDslEvaluatorTest {
 
         assertThatThrownBy(() -> dslEvaluator.evaluatePremium(invalidDsl, applicant))
                 .hasMessageContaining("unknown variable");
+    }
+
+    @ParameterizedTest(name = "DSL validation with {0} throws IllegalArgumentException")
+    @NullAndEmptySource
+    void validateDsl_throwsIllegalArgumentException(String invalidDsl) {
+        assertThatThrownBy(() -> dslEvaluator.validateAndParseDsl(invalidDsl))
+                .hasMessageContaining("DSL expression must not be null");
     }
 }

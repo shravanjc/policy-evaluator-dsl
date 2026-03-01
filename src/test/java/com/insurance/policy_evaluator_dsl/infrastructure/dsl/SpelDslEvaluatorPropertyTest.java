@@ -19,13 +19,13 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 /**
  * Property-based tests for {@link SpelDslEvaluator} covering invariants:
  * 1. Sandbox - Arbitrary strings as DSL never produce unexpected exception types.
+ *            - Malicious expressions (T() references, constructors, method chains, bean refs)
+ *              are blocked by the SimpleEvaluationContext sandbox with a typed exception, never silently
+ *              evaluated or re-thrown as untyped errors.
  * 2. Idempotency – the same DSL + applicant always produces the same result (caching correctness).
  * 3. Null safety - null DSL or null applicant returns the declared default, never an exception.
  * 4. Known-variable contract – DSLs that only reference known variables are never rejected.
  *    Unknown-variable contract - Failure with type-mismatch at evaluation time.
- * 5. Security - Malicious expressions (T() references, constructors, method chains, bean refs)
- *    are blocked by the SimpleEvaluationContext sandbox with a typed exception, never silently
- *    evaluated or re-thrown as untyped errors.
  */
 class SpelDslEvaluatorPropertyTest {
 
@@ -56,6 +56,39 @@ class SpelDslEvaluatorPropertyTest {
                                 IllegalArgumentException.class,
                                 SpelParseException.class,
                                 SpelEvaluationException.class));
+    }
+
+    // Check on malicious inputs
+    @Property
+    void typeReferenceDsl_alwaysBlockedBySandbox(
+            @ForAll("typeReferenceDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
+        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
+                .isInstanceOf(SpelEvaluationException.class);
+    }
+
+    @Property
+    void constructorCallDsl_alwaysBlockedBySandbox(
+            @ForAll("constructorCallDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
+        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
+                .isInstanceOf(SpelEvaluationException.class);
+    }
+
+    @Property
+    void methodChainOnKnownVar_alwaysBlockedBySandbox(
+            @ForAll("methodChainDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
+        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
+                .isInstanceOfAny(SpelEvaluationException.class, IllegalArgumentException.class);
+    }
+
+    @Property
+    void beanReferenceDsl_alwaysBlockedBySandbox(
+            @ForAll("beanReferenceDsls") final String dsl,
+            @ForAll("applicants") final Applicant applicant) {
+        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
+                .isInstanceOf(SpelEvaluationException.class);
     }
 
     // Invariant 2: Idempotency: same inputs, same output (validates caching correctness)
@@ -132,39 +165,6 @@ class SpelDslEvaluatorPropertyTest {
             @ForAll("applicants") final Applicant applicant) {
         assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
                 .isInstanceOf(SpelParseException.class);
-    }
-
-    // Invariant 5: Security — engine fails fast and predictably on malicious inputs.
-    @Property
-    void typeReferenceDsl_alwaysBlockedBySandbox(
-            @ForAll("typeReferenceDsls") final String dsl,
-            @ForAll("applicants") final Applicant applicant) {
-        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
-                .isInstanceOf(SpelEvaluationException.class);
-    }
-
-    @Property
-    void constructorCallDsl_alwaysBlockedBySandbox(
-            @ForAll("constructorCallDsls") final String dsl,
-            @ForAll("applicants") final Applicant applicant) {
-        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
-                .isInstanceOf(SpelEvaluationException.class);
-    }
-
-    @Property
-    void methodChainOnKnownVar_alwaysBlockedBySandbox(
-            @ForAll("methodChainDsls") final String dsl,
-            @ForAll("applicants") final Applicant applicant) {
-        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
-                .isInstanceOfAny(SpelEvaluationException.class, IllegalArgumentException.class);
-    }
-    
-    @Property
-    void beanReferenceDsl_alwaysBlockedBySandbox(
-            @ForAll("beanReferenceDsls") final String dsl,
-            @ForAll("applicants") final Applicant applicant) {
-        assertThatCode(() -> evaluator.evaluateEligibility(dsl, applicant))
-                .isInstanceOf(SpelEvaluationException.class);
     }
 
     @Provide

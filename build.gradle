@@ -20,6 +20,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    pitest
 }
 
 repositories {
@@ -87,6 +88,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     itestImplementation libs.rest.assured
+
+    pitest libs.pitest.command.line
+    pitest libs.pitest.junit5.plugin
 }
 
 tasks.named('test') {
@@ -96,6 +100,7 @@ tasks.named('test') {
 tasks.named('check') {
     dependsOn tasks.named('test')
     dependsOn tasks.named('itest')
+    dependsOn tasks.named('pitest')
 }
 
 tasks.register('itest', Test) {
@@ -111,6 +116,41 @@ tasks.register('itest', Test) {
         '--add-opens', 'java.base/java.util.concurrent=ALL-UNNAMED',
         '--add-opens', 'java.base/java.net=ALL-UNNAMED'
     )
+}
+
+tasks.register('pitest', JavaExec) {
+    description = 'Runs PITest mutation testing on SpelDslEvaluator'
+    group = 'verification'
+    dependsOn tasks.named('testClasses')
+
+    // PITest's own JARs: the command-line tool that drives mutation + the JUnit 5 discovery bridge
+    mainClass = 'org.pitest.mutationtest.commandline.MutationCoverageReport'
+    classpath = configurations.pitest
+
+    doFirst {
+        def reportDir = layout.buildDirectory.dir('reports/pitest').get().asFile
+        reportDir.mkdirs()
+
+        def classPathStr = project.files(
+            sourceSets.main.output.classesDirs,
+            sourceSets.test.output.classesDirs,
+            sourceSets.test.output.resourcesDir,
+            configurations.testRuntimeClasspath,
+            configurations.pitest
+        ).files.collect { it.absolutePath }.join(',')
+
+        args = [
+            '--reportDir',          reportDir.absolutePath,
+            '--targetClasses',      'com.insurance.policy_evaluator_dsl.infrastructure.dsl.SpelDslEvaluator',
+            '--targetTests',        'com.insurance.policy_evaluator_dsl.infrastructure.dsl.SpelDslEvaluatorMutationTest',
+            '--sourceDirs',         file('src/main/java').absolutePath,
+            '--classPath',          classPathStr,
+            '--outputFormats',      'HTML',
+            '--timestampedReports', 'false',
+            '--mutators',           'STRONGER',
+            '--threads',            '4',
+        ]
+    }
 }
 
 jacoco {

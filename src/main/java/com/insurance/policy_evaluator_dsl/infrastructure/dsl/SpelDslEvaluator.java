@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 
 import static java.lang.Boolean.TRUE;
 import static java.math.BigDecimal.ZERO;
-import static org.apache.commons.lang3.ObjectUtils.requireNonEmpty;
 
 /**
  * Spring expression language backed implementation of {@link DslEvaluator}.
@@ -66,7 +65,10 @@ public class SpelDslEvaluator implements DslEvaluator {
 
     @Override
     public void validateAndParseDsl(final String dsl) {
-        parseAndCache(requireNonEmpty(dsl, "DSL expression must not be null"));
+        if (dsl == null || dsl.isBlank()) {
+            throw new IllegalArgumentException("DSL expression must not be null or empty");
+        }
+        parseAndCache(dsl);
     }
 
     private Expression parseAndCache(final String dsl) {

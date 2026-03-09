@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
 import com.insurance.policy_evaluator_dsl.domain.model.Gender;
 import com.insurance.policy_evaluator_dsl.domain.service.DslEvaluator;
+import com.insurance.policy_evaluator_dsl.domain.service.SpelDslEvaluator;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;

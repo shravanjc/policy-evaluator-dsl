@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
 import com.insurance.policy_evaluator_dsl.domain.model.Gender;
+import com.insurance.policy_evaluator_dsl.domain.service.SpelDslEvaluator;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;

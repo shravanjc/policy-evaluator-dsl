@@ -2,6 +2,7 @@ package com.insurance.policy_evaluator_dsl.infrastructure.config;
 
 import java.math.BigDecimal;
 
+import com.insurance.policy_evaluator_dsl.domain.service.PolicyDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "policy.default")
@@ -12,5 +13,5 @@ public record PolicyProperties(
         BigDecimal basePremium,
         String variablePremiumDsl,
         String currency
-) {
+) implements PolicyDefaults {
 }

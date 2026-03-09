@@ -52,13 +52,21 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePolicyRequest'
-            example:
-              name: My Policy
-              description: Description
-              eligibilityDsl: age >= 18 AND age <= 60 AND claimFreeYears >= 1
-              basePremium: 400
-              variablePremiumDsl: (age * 7) - (claimFreeYears * 15)
-              currency: EUR
+            examples:
+              minimal:
+                summary: Minimal request (uses configured defaults for eligibility and premium)
+                value:
+                  name: My Policy
+                  currency: EUR
+              full:
+                summary: Full request with explicit DSL overrides
+                value:
+                  name: My Policy
+                  description: Description
+                  eligibilityDsl: age >= 18 AND age <= 60 AND claimFreeYears >= 1
+                  basePremium: 400
+                  variablePremiumDsl: (age * 7) - (claimFreeYears * 15)
+                  currency: EUR
       responses:
         '201':
           description: Policy created
@@ -203,7 +211,7 @@ components:
 
     CreatePolicyRequest:
       type: object
-      required: [ name, eligibilityDsl, basePremium, currency ]
+      required: [ name, currency ]
       properties:
         name:
           type: string
@@ -215,15 +223,21 @@ components:
           example: Description
         eligibilityDsl:
           type: string
-          description: SpEL expression that must evaluate to boolean
+          description: >
+            SpEL expression that must evaluate to boolean.
+            Omit to use the configured default (age >= 18 AND age <= 65).
           example: age >= 18 AND age <= 60 AND claimFreeYears >= 1
         basePremium:
           type: number
-          description: Fixed base premium amount
+          description: >
+            Fixed base premium amount.
+            Omit to use the configured default (100).
           example: 400
         variablePremiumDsl:
           type: string
-          description: SpEL expression that must evaluate to a number
+          description: >
+            SpEL expression that must evaluate to a number.
+            Omit to use the configured default (age * 5).
           example: (age * 7) - (claimFreeYears * 15)
         currency:
           type: string

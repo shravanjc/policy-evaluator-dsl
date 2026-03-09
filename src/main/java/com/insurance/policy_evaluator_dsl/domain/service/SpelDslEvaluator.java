@@ -1,4 +1,4 @@
-package com.insurance.policy_evaluator_dsl.infrastructure.dsl;
+package com.insurance.policy_evaluator_dsl.domain.service;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
-import com.insurance.policy_evaluator_dsl.domain.service.DslEvaluator;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.SpelNode;
 import org.springframework.expression.spel.ast.PropertyOrFieldReference;

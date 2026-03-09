@@ -3,6 +3,7 @@ package com.insurance.policy_evaluator_dsl.infrastructure.dsl;
 import java.math.BigDecimal;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Applicant;
+import com.insurance.policy_evaluator_dsl.domain.service.SpelDslEvaluator;
 import org.junit.jupiter.api.Test;
 
 import static com.insurance.policy_evaluator_dsl.domain.model.Gender.FEMALE;

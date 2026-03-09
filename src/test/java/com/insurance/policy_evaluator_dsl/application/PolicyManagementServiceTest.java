@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import com.insurance.policy_evaluator_dsl.domain.model.Policy;
 import com.insurance.policy_evaluator_dsl.domain.repository.PolicyRepository;
+import com.insurance.policy_evaluator_dsl.domain.service.PolicyDefaults;
 import com.insurance.policy_evaluator_dsl.domain.service.PolicyEvaluationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +31,8 @@ class PolicyManagementServiceTest {
     private PolicyRepository policyRepository;
     @Mock
     private PolicyEvaluationService policyEvaluationService;
+    @Mock
+    private PolicyDefaults policyDefaults;
 
     @InjectMocks
     private PolicyManagementService policyManagementService;
@@ -65,6 +68,45 @@ class PolicyManagementServiceTest {
 
         // then
         assertThat(result).isEqualTo(policy);
+        verify(policyRepository).save(policy);
+    }
+
+    @Test
+    void create_withoutEligibilityDsl_appliesDefault() {
+        Policy policy = Policy.builder().name("Test")
+                .basePremium(BigDecimal.valueOf(100)).variablePremiumDsl("age * 5").currency("EUR").build();
+        when(policyDefaults.eligibilityDsl()).thenReturn("age >= 18 AND age <= 65");
+        when(policyRepository.save(policy)).thenReturn(policy);
+
+        policyManagementService.create(policy);
+
+        assertThat(policy.getEligibilityDsl()).isEqualTo("age >= 18 AND age <= 65");
+        verify(policyRepository).save(policy);
+    }
+
+    @Test
+    void create_withoutBasePremium_appliesDefault() {
+        Policy policy = Policy.builder().name("Test")
+                .eligibilityDsl("age >= 18").variablePremiumDsl("age * 5").currency("EUR").build();
+        when(policyDefaults.basePremium()).thenReturn(BigDecimal.valueOf(100));
+        when(policyRepository.save(policy)).thenReturn(policy);
+
+        policyManagementService.create(policy);
+
+        assertThat(policy.getBasePremium()).isEqualByComparingTo("100");
+        verify(policyRepository).save(policy);
+    }
+
+    @Test
+    void create_withoutVariablePremiumDsl_appliesDefault() {
+        Policy policy = Policy.builder().name("Test")
+                .eligibilityDsl("age >= 18").basePremium(BigDecimal.valueOf(100)).currency("EUR").build();
+        when(policyDefaults.variablePremiumDsl()).thenReturn("age * 5");
+        when(policyRepository.save(policy)).thenReturn(policy);
+
+        policyManagementService.create(policy);
+
+        assertThat(policy.getVariablePremiumDsl()).isEqualTo("age * 5");
         verify(policyRepository).save(policy);
     }
 
